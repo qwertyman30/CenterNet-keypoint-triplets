@@ -12,6 +12,8 @@ Extend CenterNet++ to work with KITTI dataset
 
 ```cd data```
 
+#### COCO
+
 ```mkdir coco && cd coco```
 
 ```mkdir images && cd images```
@@ -28,6 +30,13 @@ Extend CenterNet++ to work with KITTI dataset
 
 ```unzip annotations_trainval2017.zip```
 
+#### KITTI
+
+```mkdir coco && cd coco```
+
+```mkdir images && cd images```
+
+
 The dataset directory should be like this:
 
 ```plain
@@ -38,6 +47,12 @@ The dataset directory should be like this:
             ├── train2017
             ├── val2017
             ├── test2017
+│   ├── kitti
+│   │   ├── annotations
+│   │   ├── images
+            ├── training
+            ├── testing
+
 ```
 
 ##### 1. Install pytorch
@@ -46,7 +61,7 @@ The dataset directory should be like this:
 
 ##### 2. Install requirements
 
-- ```python -m pip install matplotlib mmpycocotools tqdm mmcv-full```
+- ```python -m pip install matplotlib mmpycocotools tqdm mmcv-full terminaltables```
 
 ##### 3. Install mmdet
 
