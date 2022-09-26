@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 from functools import partial
@@ -25,11 +25,11 @@ from model.dense_heads.pycenternet_head import PyCenterNetHead
 from model.backbone.resnet import ResNet
 from model.neck.fpn import FPN
 from model.detectors.pycenternet_detector import PyCenterNetDetector
-from model.utils.utils import clip_grads, save_model
+from model.utils.utils import clip_grads, save_model, update_lr
 from model.model_config import *
 
 
-# In[2]:
+# In[ ]:
 
 
 print(torch.cuda.is_available())
@@ -41,7 +41,7 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 
-# In[3]:
+# In[ ]:
 
 
 opts = dict()
@@ -58,6 +58,8 @@ opts["ann_file"] = "Data/COCO/annotations/instances_train2017.json"
 opts["img_prefix"] = "Data/COCO/images/train2017"
 opts["seg_prefix"] = None
 opts["num_epochs"] = 72
+opts["post_warmup_lr"] = 1e-4
+opts["lr_step"] = [63, 69]
 
 
 # In[ ]:
@@ -91,8 +93,15 @@ model = MMDataParallel(detector.cuda(0), device_ids=range(0, 1))
 # In[ ]:
 
 
+
+
+
+# In[ ]:
+
+
 progress = tqdm(range(1, opts["num_epochs"] + 1))
 LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE, LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM, LOSS = [], [], [], [], [], [], []
+curr_iter = 0
 for epoch in progress:
     loss_cls_, loss_pts_init_, loss_pts_refine_, loss_heatmap_, loss_offset_, loss_sem_, loss_ = [], [], [], [], [], [], []
     for results in train_loader:
@@ -121,6 +130,12 @@ for epoch in progress:
         loss_offset_.append(loss_offset)
         loss_sem_.append(loss_sem)
         loss_.append(loss)
+
+        curr_iter += 1
+        # keep lr low when iters less than warmup period and then increase
+        if curr_iter == 500:
+            update_lr(optimizer, opts["post_warmup_lr"])
+    
     loss_cls_mean = np.mean(loss_cls_)
     loss_pts_init_mean = np.mean(loss_pts_init_)
     loss_pts_refine_mean = np.mean(loss_pts_refine_)
@@ -136,6 +151,11 @@ for epoch in progress:
     LOSS_HEATMAP.append(loss_heatmap_mean)
     LOSS_OFFSET.append(loss_offset_mean)
     LOSS_SEM.append(loss_sem_mean)
+
+    if epoch in opts["lr_step"]:
+        lr = opts["post_warmup_lr"] * (0.1 ** (opt["lr_step"].index(epoch) + 1))
+        update_lr(optimizer, lr)
+
     if epoch % 10 or epoch == opts["num_epochs"]:
         save_model(model, optimizer, epoch,
                    LOSS, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,

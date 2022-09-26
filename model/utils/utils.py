@@ -9,6 +9,12 @@ def clip_grads(params, grad_clip):
         return clip_grad.clip_grad_norm_(params, **grad_clip)
 
 
+def update_lr(optimizer, lr):
+    print('Drop LR to', lr)
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+
 def save_model(model, optimizer, epochs,
                LOSS, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
                LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM):
