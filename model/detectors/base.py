@@ -217,7 +217,7 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
 
         return loss, log_vars
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data):
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
