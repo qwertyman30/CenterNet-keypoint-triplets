@@ -49,7 +49,8 @@ train_loader = torch.utils.data.DataLoader(
 backbone = ResNet(**backbone_cfg).cuda()
 neck = FPN(**neck_cfg).cuda()
 bbox_head = PyCenterNetHead(**bbox_head_cfg).cuda()
-detector = PyCenterNetDetector(backbone, neck, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg).cuda()
+detector = PyCenterNetDetector(backbone, neck, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg,
+                               pretrained="pretrained/resnet50-19c8e357.pth", ).cuda()
 optimizer = build_optimizer(detector, optimizer_cfg)
 
 # Training
