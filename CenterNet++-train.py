@@ -100,7 +100,7 @@ model = MMDataParallel(detector.cuda(0), device_ids=range(0, 1))
 
 
 progress = tqdm(range(1, opts["num_epochs"] + 1))
-LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE, LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM, LOSS = [], [], [], [], [], [], []
+LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE, LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM, LOSSES = [], [], [], [], [], [], []
 curr_iter = 0
 for epoch in progress:
     loss_cls_, loss_pts_init_, loss_pts_refine_, loss_heatmap_, loss_offset_, loss_sem_, loss_ = [], [], [], [], [], [], []
@@ -144,7 +144,7 @@ for epoch in progress:
     loss_sem_mean = np.mean(loss_sem_)
     loss_mean = np.mean(loss_)
 
-    LOSS.append(loss_mean)
+    LOSSES.append(loss_mean)
     LOSS_CLS.append(loss_cls_mean)
     LOSS_PTS_INIT.append(loss_pts_init_mean)
     LOSS_PTS_REFINE.append(loss_pts_refine_mean)
@@ -158,7 +158,7 @@ for epoch in progress:
 
     if epoch % 10 or epoch == opts["num_epochs"]:
         save_model(model, optimizer, epoch,
-                   LOSS, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
+                   LOSSES, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
                    LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM)
     print(
         f"LOSS_CLS: {loss_cls_mean}, LOSS_PTS_INIT: {loss_pts_init_mean}, LOSS_PTS_REFINE: {loss_pts_refine_mean}, LOSS_HEATMAP: {loss_heatmap_mean}, LOSS_OFFSET: {loss_offset_mean}, LOSS_SEM: {loss_sem_mean}, LOSS: {loss_mean}")
@@ -167,7 +167,7 @@ for epoch in progress:
 # In[ ]:
 
 
-plt.plot(LOSS)
+plt.plot(LOSSES)
 plt.xlabel("Epochs")
 plt.ylabel("Loss")
 plt.title("LOSS")
