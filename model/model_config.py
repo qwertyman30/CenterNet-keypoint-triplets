@@ -19,8 +19,8 @@ if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
     opts["ann_file"] = "kitti_3dop_trainval.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
-    opts["mean"] = [0.40789654, 0.44719302, 0.47026115]
-    opts["std"] = [0.28863828, 0.27408164, 0.27809835]
+    opts["mean"] = [104.0136177 , 114.0342201 , 119.91659325]
+    opts["std"] = [73.6027614 , 69.8908182 , 70.91507925]
     opts["img_scale"] = [0.4]
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
