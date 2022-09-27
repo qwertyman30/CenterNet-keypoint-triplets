@@ -1,7 +1,7 @@
-data
+data/coco
 build
 mmdet.egg-info
 **/__pycache__/
-.idea
+.idea/
 .ipynb_checkpoints/
 *.ipynb
