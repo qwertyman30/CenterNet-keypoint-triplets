@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from mmcv.runner import build_optimizer
 
 from dataset.coco import COCO
+from dataset.kitti import KITTI
 from dataset.utils.collate import collate
 
 from model.dense_heads.pycenternet_head import PyCenterNetHead
@@ -31,26 +32,11 @@ seed = 42
 torch.manual_seed(seed)
 np.random.seed(seed)
 
-# Configuration
-opts = dict()
-opts["img_scale"] = (1333, 800)
-opts["keep_ratio"] = True
-opts["flip_ratio"] = 0.5
-opts["mean"] = [123.675, 116.28, 103.53]
-opts["std"] = [58.395, 57.12, 57.375]
-opts["to_rgb"] = True
-opts["size_divisor"] = 32
-opts["data_root"] = "data/"
-opts["batch_size"] = 16
-opts["ann_file"] = "data/coco/annotations/instances_train2017.json"
-opts["img_prefix"] = "data/coco/images/train2017"
-opts["seg_prefix"] = None
-opts["num_epochs"] = 72
-opts["post_warmup_lr"] = 1e-4
-opts["lr_step"] = [63, 69]
-
 # Dataset and loader
-dataset = COCO(opts)
+if opts["dataset"] == "coco":
+    dataset = COCO(opts)
+elif opts["dataset"] == "kitti":
+    dataset = KITTI(opts)
 train_loader = torch.utils.data.DataLoader(
     dataset,
     batch_size=opts["batch_size"],
@@ -136,7 +122,7 @@ for epoch in progress:
                    LOSSES, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
                    LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM)
     print(
-        f"LOSS_CLS: {loss_cls_mean}, LOSS_PTS_INIT: {loss_pts_init_mean}, LOSS_PTS_REFINE: {loss_pts_refine_mean}, LOSS_HEATMAP: {loss_heatmap_mean}, LOSS_OFFSET: {loss_offset_mean}, LOSS_SEM: {loss_sem_mean}, LOSS: {loss_mean}")
+        f"LOSS_CLS: {loss_cls_mean}, LOSS_PTS_INIT: {loss_pts_init_mean}, LOSS_PTS_REFINE: {loss_pts_refine_mean}, LOSS_HEATMAP: {loss_heatmap_mean}, LOSS_OFFSET: {loss_offset_mean}, LOSS_SEM: {loss_sem_mean}, LOSS: {loss_mean}\n")
 
 # Plotting losses
 plt.plot(LOSSES)

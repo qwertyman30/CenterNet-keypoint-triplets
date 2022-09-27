@@ -39,6 +39,7 @@ class SingleStageDetector(BaseDetector):
                 Defaults to None.
         """
         super(SingleStageDetector, self).init_weights(pretrained)
+        # self.backbone.init_weights(pretrained=True)
         self.backbone.init_weights(pretrained=pretrained)
         if self.with_neck:
             if isinstance(self.neck, nn.Sequential):

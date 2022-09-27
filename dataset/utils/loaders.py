@@ -62,6 +62,8 @@ class LoadImageFromFile(object):
         results['img'] = img
         results['img_shape'] = img.shape
         results['ori_shape'] = img.shape
+        results["width"] = img.shape[1]
+        results["height"] = img.shape[0]
         results['img_fields'] = ['img']
         return results
 

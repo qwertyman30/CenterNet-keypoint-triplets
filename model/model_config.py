@@ -1,3 +1,35 @@
+# Configuration
+opts = dict()
+opts["data_root"] = "data/"
+opts["seg_prefix"] = None
+# learning hyperparams
+opts["batch_size"] = 16
+opts["num_epochs"] = 72
+opts["post_warmup_lr"] = 1e-4
+opts["lr_step"] = [63, 69]
+# transforms
+opts["scale"] = 0.4
+opts["dataset"] = "kitti"
+opts["keep_ratio"] = True
+opts["flip_ratio"] = 0.5
+opts["to_rgb"] = True
+opts["size_divisor"] = 32
+
+if opts["dataset"] == "kitti":
+    opts["num_classes"] = 3
+    opts["ann_file"] = "kitti_3dop_trainval.json"
+    opts["img_prefix"] = "data/kitti/images/training/image_2"
+    opts["mean"] = [0.40789654, 0.44719302, 0.47026115]
+    opts["std"] = [0.28863828, 0.27408164, 0.27809835]
+    opts["img_scale"] = [0.4]
+elif opts["dataset"] == "coco":
+    opts["num_classes"] = 80
+    opts["ann_file"] = "data/coco/annotations/instances_train2017.json"
+    opts["img_prefix"] = "data/coco/images/train2017"
+    opts["mean"] = [123.675, 116.28, 103.53]
+    opts["std"] = [58.395, 57.12, 57.375]
+    opts["img_scale"] = [(900, 256), (900, 608)]
+
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 
 backbone_cfg = dict(depth=50,
@@ -7,13 +39,16 @@ backbone_cfg = dict(depth=50,
                     norm_cfg=dict(type='BN', requires_grad=True),
                     norm_eval=True,
                     style='pytorch')
+
+# backbone_cfg = dict(levels=[1, 1, 1, 2, 2, 1], channels=[16, 32, 64, 128, 256, 512], num_classes=80)
+# in_channels=[16, 32, 64, 128, 256, 512],
 neck_cfg = dict(in_channels=[256, 512, 1024, 2048],
                 out_channels=256,
                 start_level=1,
                 add_extra_convs='on_input',
                 num_outs=5,
                 norm_cfg=norm_cfg)
-bbox_head_cfg = dict(num_classes=80,
+bbox_head_cfg = dict(num_classes=opts["num_classes"],
                      in_channels=256,
                      feat_channels=256,
                      point_feat_channels=256,

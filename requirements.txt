@@ -1,0 +1,10 @@
+numpy~=1.22.3
+scipy~=1.8.1
+pycocotools~=2.0.4
+six~=1.16.0
+terminaltables~=3.1.10
+matplotlib~=3.5.1
+mmcv-full~=1.6.1
+setuptools~=61.2.0
+tqdm~=4.64.0
+torch~=1.11.0

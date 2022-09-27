@@ -1,6 +1,13 @@
 import numpy as np
 import mmcv
 
+_MAX_LEVEL = 10
+
+
+def enhance_level_to_value(level, a=1.8, b=0.1):
+    """Map from level to values."""
+    return (level / _MAX_LEVEL) * a + b
+
 
 class Resize(object):
     """Resize images & bbox & mask.
@@ -503,4 +510,52 @@ class Normalize(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(mean={self.mean}, std={self.std}, to_rgb={self.to_rgb})'
+        return repr_str
+
+
+class ColorTransform(object):
+    """Apply Color transformation to image. The bboxes, masks, and
+    segmentations are not modified.
+
+    Args:
+        level (int | float): Should be in range [0,_MAX_LEVEL].
+        prob (float): The probability for performing Color transformation.
+    """
+
+    def __init__(self, level, prob=0.5):
+        assert isinstance(level, (int, float)), \
+            'The level must be type int or float.'
+        assert 0 <= level <= _MAX_LEVEL, \
+            'The level should be in range [0,_MAX_LEVEL].'
+        assert 0 <= prob <= 1.0, \
+            'The probability should be in range [0,1].'
+        self.level = level
+        self.prob = prob
+        self.factor = enhance_level_to_value(level)
+
+    def _adjust_color_img(self, results, factor=1.0):
+        """Apply Color transformation to image."""
+        for key in results.get('img_fields', ['img']):
+            # NOTE defaultly the image should be BGR format
+            img = results[key]
+            results[key] = mmcv.adjust_color(img, factor).astype(img.dtype)
+
+    def __call__(self, results):
+        """Call function for Color transformation.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Colored results.
+        """
+        if np.random.rand() > self.prob:
+            return results
+        self._adjust_color_img(results, self.factor)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(level={self.level}, '
+        repr_str += f'prob={self.prob})'
         return repr_str

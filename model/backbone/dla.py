@@ -276,6 +276,9 @@ class DLA(nn.Module):
             y.append(x)
         return y
 
+    def init_weights(self, pretrained=True):
+        self.load_pretrained_model(data='imagenet', name='dla34', hash='ba72cf86')
+
     def load_pretrained_model(self, data='imagenet', name='dla34', hash='ba72cf86'):
         # fc = self.fc
         if name.endswith('.pth'):

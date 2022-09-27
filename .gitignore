@@ -1,4 +1,7 @@
 data
 build
 mmdet.egg-info
-__pycache__
+**/__pycache__/
+.idea
+.ipynb_checkpoints/
+*.ipynb

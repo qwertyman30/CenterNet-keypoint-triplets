@@ -81,15 +81,14 @@ class CustomDataset(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=[(900, 256), (900, 608)], multiscale_mode='range', keep_ratio=True)
-        self.RandomFlip_train = RandomFlip(flip_ratio=0.5)
-        self.Normalize = Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+        self.Resize_train = Resize(img_scale=[(900, 256), (900, 608)], multiscale_mode='range', keep_ratio=opts["keep_ratio"])
+        self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
+        self.Normalize = Normalize(mean=opts["mean"], std=opts["std"], to_rgb=True)
         self.Pad = Pad(size_divisor=32)
 
         # formatting pipeline
         self.LoadRPDV2Annotations = LoadRPDV2Annotations()
         self.RPDV2FormatBundle = RPDV2FormatBundle()
-        self.ImageToTensor = ImageToTensor(keys=['img'])
         self.Collect_train = Collect(keys=['img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'])
 
         # test transforms
