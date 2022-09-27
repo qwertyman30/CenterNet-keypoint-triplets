@@ -1,3 +1,4 @@
 data
 build
 mmdet.egg-info
+__pycache__
