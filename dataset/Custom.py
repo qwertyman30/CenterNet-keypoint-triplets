@@ -62,6 +62,7 @@ class CustomDataset(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
+        self.standardize = opts["standardize"]
         self.test_mode = test_mode
         self.filter_empty_gt = filter_empty_gt
         self.CLASSES = self.get_classes(classes)
@@ -196,6 +197,8 @@ class CustomDataset(Dataset):
         results['seg_fields'] = []
         img_path = osp.join(self.img_prefix, results['img_info']['filename'])
         results["img"] = mmcv.imread(img_path)
+        if self.standardize:
+            results["img"] /= 255.
 
         # pipeline of transforms
         results = self.LoadImageFromFile(results)

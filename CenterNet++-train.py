@@ -18,6 +18,7 @@ from dataset.utils.collate import collate
 
 from model.dense_heads.pycenternet_head import PyCenterNetHead
 from model.backbone.resnet import ResNet
+# from model.backbone.dla import dla34
 from model.neck.fpn import FPN
 from model.detectors.pycenternet_detector import PyCenterNetDetector
 from model.utils.utils import clip_grads, save_model, update_lr
@@ -47,10 +48,11 @@ train_loader = torch.utils.data.DataLoader(
 
 # Model
 backbone = ResNet(**backbone_cfg).cuda()
+# backbone = dla34(pretrained=True).cuda()
 neck = FPN(**neck_cfg).cuda()
 bbox_head = PyCenterNetHead(**bbox_head_cfg).cuda()
 detector = PyCenterNetDetector(backbone, neck, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg,
-                               pretrained="pretrained/resnet50-19c8e357.pth", ).cuda()
+                               pretrained="pretrained/resnet50-19c8e357.pth").cuda()
 optimizer = build_optimizer(detector, optimizer_cfg)
 
 # Training
@@ -118,7 +120,7 @@ for epoch in progress:
         lr = opts["post_warmup_lr"] * (0.1 ** (opts["lr_step"].index(epoch) + 1))
         update_lr(optimizer, lr)
 
-    if epoch % 10 or epoch == opts["num_epochs"]:
+    if epoch % 10 == 0 or epoch == opts["num_epochs"]:
         save_model(detector, optimizer, epoch,
                    LOSSES, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
                    LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM)

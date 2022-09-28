@@ -24,6 +24,7 @@ class KITTI(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
+        self.standardize = opts["standardize"]
         self.test_mode = test_mode
         self.filter_empty_gt = filter_empty_gt
 
@@ -40,7 +41,7 @@ class KITTI(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=[opts["scale"]], multiscale_mode='range', keep_ratio=True)
+        self.Resize_train = Resize(img_scale=[opts["img_scale"]], multiscale_mode='range', keep_ratio=True)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
@@ -55,7 +56,7 @@ class KITTI(Dataset):
         self.Collect_test = Collect(keys=['img'])
 
     def load_annotations(self, ann_file):
-        self.annot_path = osp.join(self.data_root, 'kitti/annotations', ann_file)
+        self.annot_path = osp.join(ann_file)
         self.coco = coco.COCO(self.annot_path)
         self.cat_ids = self.coco.getCatIds(catNms=self.CLASSES)
         self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
@@ -169,8 +170,12 @@ class KITTI(Dataset):
         results['bbox_fields'] = []
         results['mask_fields'] = []
         results['seg_fields'] = []
+
         img_path = osp.join(self.img_prefix, results['img_info']['filename'])
-        results["img"] = mmcv.imread(img_path)
+        img = mmcv.imread(img_path)
+        results['img'] = img
+        if self.standardize:
+            results["img"] /= 255.
 
         # pipeline of transforms
         results = self.LoadImageFromFile(results)
