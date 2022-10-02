@@ -41,7 +41,7 @@ class KITTI(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=[opts["img_scale"]], multiscale_mode='range', keep_ratio=True)
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=True)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
@@ -172,7 +172,7 @@ class KITTI(Dataset):
         results['seg_fields'] = []
 
         img_path = osp.join(self.img_prefix, results['img_info']['filename'])
-        img = mmcv.imread(img_path)
+        img = mmcv.imread(img_path).astype(np.float32)
         results['img'] = img
         if self.standardize:
             results["img"] /= 255.

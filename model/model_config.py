@@ -8,25 +8,24 @@ opts["num_epochs"] = 72
 opts["post_warmup_lr"] = 1e-4
 opts["lr_step"] = [63, 69]
 # transforms
-opts["scale"] = 0.4
 opts["dataset"] = "kitti"
 opts["keep_ratio"] = True
 opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
 opts["size_divisor"] = 32
 opts["standardize"] = True
-if opts["standardize"] == True:
+if opts["standardize"]:
     opts["mean"] = [0.485, 0.456, 0.406]
     opts["std"] = [0.229, 0.224, 0.225]
 else:
-    opts["mean"] = [123.675, 116.28 , 103.53 ]
+    opts["mean"] = [123.675, 116.28, 103.53]
     opts["std"] = [58.395, 57.12, 57.375]
 
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
-    opts["ann_file"] = "data/kitti/annotations/kitti_3dop_trainval.json"
+    opts["ann_file"] = "data/kitti/annotations/kitti_3dop_train.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
-    opts["img_scale"] = 0.4
+    opts["img_scale"] = [(900, 256), (900, 608)]
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
     opts["ann_file"] = "data/coco/annotations/instances_train2017.json"
