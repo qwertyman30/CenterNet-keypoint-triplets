@@ -15,8 +15,12 @@ class KITTI(Dataset):
     CLASSES = ['Pedestrian', 'Car', 'Cyclist']
 
     def __init__(self, opts,
+                 train=True,
                  test_mode=False):
-        self.ann_file = opts["ann_file"]
+        if train:
+            self.ann_file = opts["ann_file_train"]
+        else:
+            self.ann_file = opts["ann_file_val"]
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]

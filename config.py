@@ -5,11 +5,6 @@ from model.backbone.resnet import ResNet
 opts = dict()
 opts["data_root"] = "data/"
 opts["seg_prefix"] = None
-# learning hyperparams
-opts["batch_size"] = 16
-opts["num_epochs"] = 72
-opts["post_warmup_lr"] = 1e-4
-opts["lr_step"] = [63, 69]
 # transforms
 opts["dataset"] = "kitti"
 opts["keep_ratio"] = True
@@ -18,6 +13,12 @@ opts["to_rgb"] = True
 opts["size_divisor"] = 32
 opts["to_float"] = True
 opts["split"] = "train"
+# learning hyperparams
+opts["batch_size"] = 16
+opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 2000
+opts["lr"] = 1e-4
+opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 1000, 1500]
+opts["save_interval"] = 10 if opts["dataset"] == "coco" else 250
 if opts["to_float"]:
     opts["mean"] = [0.485, 0.456, 0.406]
     opts["std"] = [0.229, 0.224, 0.225]
@@ -27,17 +28,19 @@ else:
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
     if opts["split"] == "train":
-        opts["ann_file"] = "data/kitti/annotations/kitti_3dop_train.json"
+        opts["ann_file_train"] = "data/kitti/annotations/kitti_3dop_train.json"
+        opts["ann_file_val"] = "data/kitti/annotations/kitti_3dop_val.json"
     elif opts["split"] == "val":
         opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
     opts["img_scale"] = [(1280, 384)]
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
-    opts["ann_file"] = "data/coco/annotations/instances_train2017.json"
+    opts["ann_file_train"] = "data/coco/annotations/instances_train2017.json"
+    opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
     opts["img_scale"] = [(900, 256), (900, 608)]
-opts["backbone"] = "resnet50"
+opts["backbone"] = "dla169"
 assert opts["backbone"] in ["resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c", "dla102",
                             "dla102x", "dla102x2", "dla169"], "backbone not supported"
 
@@ -151,7 +154,7 @@ test_cfg = dict(
     nms=dict(type='nms', iou_threshold=0.6),
     max_per_img=100)
 
-optimizer_cfg = dict(type='AdamW', lr=1e-7, betas=(0.9, 0.999), weight_decay=0.05,
+optimizer_cfg = dict(type='AdamW', lr=opts["lr"], betas=(0.9, 0.999), weight_decay=0.05,
                      paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
                                                      'relative_position_bias_table': dict(decay_mult=0.),
                                                      'norm': dict(decay_mult=0.)}))
