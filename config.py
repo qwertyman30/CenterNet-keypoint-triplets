@@ -16,10 +16,10 @@ opts["to_float"] = True
 opts["split"] = "train"
 # learning hyperparams
 opts["batch_size"] = 16
-opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 2000
+opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1000
 opts["lr"] = 1e-4
-opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 1000, 1500]
-opts["save_interval"] = 10 if opts["dataset"] == "coco" else 250
+opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 700, 900]
+opts["save_interval"] = 10 if opts["dataset"] == "coco" else 125
 # dataset config
 opts["data_root"] = "data/"
 opts["seg_prefix"] = None
@@ -44,7 +44,7 @@ elif opts["dataset"] == "coco":
     opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
     opts["img_scale"] = [(900, 256), (900, 608)]
-opts["backbone"] = "resnet50"
+opts["backbone"] = "dla169"
 assert opts["backbone"] in ["resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c", "dla102",
                             "dla102x", "dla102x2", "dla169"], "backbone not supported"
 
@@ -84,7 +84,7 @@ norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 neck_cfg = dict(
     in_channels=backbone_cfg[opts["backbone"]]["channels"] if "dla" in opts["backbone"] else [256, 512, 1024, 2048],
     out_channels=256,
-    start_level=3 if "dla" in opts["backbone"] else 1,
+    start_level=2 if "dla" in opts["backbone"] else 1,
     add_extra_convs='on_input',
     num_outs=5,
     norm_cfg=norm_cfg)

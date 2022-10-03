@@ -27,7 +27,7 @@ print(torch.cuda.is_available())
 print(torch.version.cuda)
 torch.cuda.empty_cache()
 
-seed = 42
+seed = 15921
 torch.manual_seed(seed)
 np.random.seed(seed)
 
@@ -118,7 +118,7 @@ train_loader = DataLoader(
     dataset_train,
     batch_size=opts["batch_size"],
     shuffle=True,
-    num_workers=2,
+    num_workers=0,
     collate_fn=collate,
     pin_memory=True)
 
@@ -126,7 +126,7 @@ val_loader = DataLoader(
     dataset_train,
     batch_size=opts["batch_size"],
     shuffle=True,
-    num_workers=2,
+    num_workers=0,
     collate_fn=collate,
     pin_memory=True)
 
@@ -146,7 +146,7 @@ detector = PyCenterNetDetector(backbone, neck, bbox_head, train_cfg=train_cfg, t
                                pretrained=pretrained).cuda()
 optimizer = build_optimizer(detector, optimizer_cfg)
 
-pytorch_total_params = sum(p.numel() for p in detector.parameters() if p.requires_grad)
+# pytorch_total_params = sum(p.numel() for p in detector.parameters() if p.requires_grad)
 
 # Training
 f = open("tqdm_log.txt", "w") if opts["nohup"] is True else None
