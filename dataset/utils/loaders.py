@@ -14,7 +14,7 @@ class LoadImageFromFile(object):
     "scale_factor" (1.0) and "img_norm_cfg" (means=0 and stds=1).
 
     Args:
-        to_float32 (bool): Whether to convert the loaded image to a float32
+        to_float (bool): Whether to convert the loaded image to a float32
             numpy array. If set to False, the loaded image is an uint8 array.
             Defaults to False.
         color_type (str): The flag argument for :func:`mmcv.imfrombytes`.
@@ -25,10 +25,10 @@ class LoadImageFromFile(object):
     """
 
     def __init__(self,
-                 to_float32=False,
+                 to_float=False,
                  color_type='color',
                  file_client_args=dict(backend='disk')):
-        self.to_float32 = to_float32
+        self.to_float = to_float
         self.color_type = color_type
         self.file_client_args = file_client_args.copy()
         self.file_client = None
@@ -54,7 +54,7 @@ class LoadImageFromFile(object):
 
         img_bytes = self.file_client.get(filename)
         img = mmcv.imfrombytes(img_bytes, flag=self.color_type)
-        if self.to_float32:
+        if self.to_float:
             img = img.astype(np.float32) / 255.
 
         results['filename'] = filename
@@ -69,7 +69,7 @@ class LoadImageFromFile(object):
 
     def __repr__(self):
         repr_str = (f'{self.__class__.__name__}('
-                    f'to_float32={self.to_float32}, '
+                    f'to_float={self.to_float}, '
                     f"color_type='{self.color_type}', "
                     f'file_client_args={self.file_client_args})')
         return repr_str

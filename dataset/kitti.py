@@ -24,7 +24,7 @@ class KITTI(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
-        self.standardize = opts["standardize"]
+        self.split = opts["split"]
         self.test_mode = test_mode
         self.filter_empty_gt = filter_empty_gt
 
@@ -37,7 +37,7 @@ class KITTI(Dataset):
         self.data_infos = self.load_annotations(self.ann_file)
 
         # Loading pipeline
-        self.LoadImageFromFile = LoadImageFromFile()
+        self.LoadImageFromFile = LoadImageFromFile(to_float=opts["to_float"])
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
@@ -170,12 +170,6 @@ class KITTI(Dataset):
         results['bbox_fields'] = []
         results['mask_fields'] = []
         results['seg_fields'] = []
-
-        img_path = osp.join(self.img_prefix, results['img_info']['filename'])
-        img = mmcv.imread(img_path).astype(np.float32)
-        results['img'] = img
-        if self.standardize:
-            results["img"] /= 255.
 
         # pipeline of transforms
         results = self.LoadImageFromFile(results)

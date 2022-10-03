@@ -13,24 +13,26 @@ opts["keep_ratio"] = True
 opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
 opts["size_divisor"] = 32
-opts["standardize"] = True
-if opts["standardize"]:
+opts["to_float"] = True
+opts["split"] = "val"
+if opts["to_float"]:
     opts["mean"] = [0.485, 0.456, 0.406]
     opts["std"] = [0.229, 0.224, 0.225]
 else:
     opts["mean"] = [123.675, 116.28, 103.53]
     opts["std"] = [58.395, 57.12, 57.375]
-
+opts["img_scale"] = [(900, 256), (900, 608)]
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
-    opts["ann_file"] = "data/kitti/annotations/kitti_3dop_train.json"
+    if opts["split"] == "train":
+        opts["ann_file"] = "data/kitti/annotations/kitti_3dop_train.json"
+    elif opts["split"] == "val":
+        opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
-    opts["img_scale"] = [(900, 256), (900, 608)]
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
     opts["ann_file"] = "data/coco/annotations/instances_train2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
-    opts["img_scale"] = [(900, 256), (900, 608)]
 
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 

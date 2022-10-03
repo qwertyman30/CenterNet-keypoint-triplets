@@ -62,7 +62,6 @@ class CustomDataset(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
-        self.standardize = opts["standardize"]
         self.test_mode = test_mode
         self.filter_empty_gt = filter_empty_gt
         self.CLASSES = self.get_classes(classes)
@@ -78,11 +77,11 @@ class CustomDataset(Dataset):
             self._set_group_flag()
 
         # Loading pipeline
-        self.LoadImageFromFile = LoadImageFromFile()
+        self.LoadImageFromFile = LoadImageFromFile(to_float=opts["to_float"])
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=opts["image_scale"], multiscale_mode='range',
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range',
                                    keep_ratio=opts["keep_ratio"])
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.Normalize = Normalize(mean=opts["mean"], std=opts["std"], to_rgb=True)
@@ -196,10 +195,6 @@ class CustomDataset(Dataset):
         results['bbox_fields'] = []
         results['mask_fields'] = []
         results['seg_fields'] = []
-        img_path = osp.join(self.img_prefix, results['img_info']['filename'])
-        results["img"] = mmcv.imread(img_path).astype(np.float32)
-        if self.standardize:
-            results["img"] /= 255.
 
         # pipeline of transforms
         results = self.LoadImageFromFile(results)

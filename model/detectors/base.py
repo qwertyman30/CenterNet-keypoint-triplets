@@ -65,7 +65,7 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
     def forward_train(self, imgs, img_metas, **kwargs):
         """
         Args:
-            img (list[Tensor]): List of tensors of shape (1, C, H, W).
+            imgs (list[Tensor]): List of tensors of shape (1, C, H, W).
                 Typically these should be mean centered and std scaled.
             img_metas (list[dict]): List of image info dict where each dict
                 has: 'img_shape', 'scale_factor', 'flip', and may also contain
