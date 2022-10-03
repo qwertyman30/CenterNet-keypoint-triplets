@@ -44,7 +44,7 @@ elif opts["dataset"] == "coco":
     opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
     opts["img_scale"] = [(900, 256), (900, 608)]
-opts["backbone"] = "dla169"
+opts["backbone"] = "resnet50"
 assert opts["backbone"] in ["resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c", "dla102",
                             "dla102x", "dla102x2", "dla169"], "backbone not supported"
 

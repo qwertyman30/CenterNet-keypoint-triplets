@@ -452,23 +452,6 @@ class COCO(Dataset):
     #
     #     return results
 
-    # def __getitem__(self, idx):
-    #     img_info = self.data_infos[idx]
-    #     img_id = img_info['id']
-    #     ann_ids = self.coco.getAnnIds(imgIds=[img_id])
-    #     ann = self.coco.loadAnns(ann_ids)
-    #     ann_info = self._parse_ann_info(img_info, ann)
-    #     results = dict(img_info=img_info, ann_info=ann_info)
-    #     results = self.pre_pipeline(results)
-    #
-    #     # pipeline of image transforms
-    #     # results = self.Resize(results)
-    #     results = self.RandomFlip(results)
-    #     results = self.Normalize(results)
-    #     results = self.pad(results)
-    #
-    #     return results
-
     # def _to_float(self, x):
     #     return float("{:.2f}".format(x))
     #

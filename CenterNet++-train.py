@@ -158,13 +158,13 @@ LOSS_OFFSET_VAL, LOSS_SEM_VAL, LOSSES_VAL = [], [], []
 for epoch in progress:
     print("TRAIN STEP")
     loss_means_train = step(detector, train_loader, progress, optimizer=optimizer, train=True)
-    LOSSES_TRAIN.append(loss_means_train["loss_mean"])
-    LOSS_CLS_TRAIN.append(loss_means_train["loss_cls_mean"])
-    LOSS_PTS_INIT_TRAIN.append(loss_means_train["loss_pts_init_mean"])
-    LOSS_PTS_REFINE_TRAIN.append(loss_means_train["loss_pts_refine_mean"])
-    LOSS_HEATMAP_TRAIN.append(loss_means_train["loss_heatmap_mean"])
-    LOSS_OFFSET_TRAIN.append(loss_means_train["loss_offset_mean"])
-    LOSS_SEM_TRAIN.append(loss_means_train["loss_sem_mean"])
+    LOSSES_TRAIN.append(loss_means_train["loss"])
+    LOSS_CLS_TRAIN.append(loss_means_train["loss_cls"])
+    LOSS_PTS_INIT_TRAIN.append(loss_means_train["loss_pts_init"])
+    LOSS_PTS_REFINE_TRAIN.append(loss_means_train["loss_pts_refine"])
+    LOSS_HEATMAP_TRAIN.append(loss_means_train["loss_heatmap"])
+    LOSS_OFFSET_TRAIN.append(loss_means_train["loss_offset"])
+    LOSS_SEM_TRAIN.append(loss_means_train["loss_sem"])
 
     if epoch in opts["lr_step"]:
         lr = opts["lr"] * (0.1 ** (opts["lr_step"].index(epoch) + 1))
@@ -174,13 +174,13 @@ for epoch in progress:
         with torch.no_grad():
             print("VAL STEP")
             loss_means_val = step(detector, val_loader, progress, optimizer=None, train=False)
-            LOSSES_VAL.append(loss_means_val["loss_mean"])
-            LOSS_CLS_VAL.append(loss_means_val["loss_cls_mean"])
-            LOSS_PTS_INIT_VAL.append(loss_means_val["loss_pts_init_mean"])
-            LOSS_PTS_REFINE_VAL.append(loss_means_val["loss_pts_refine_mean"])
-            LOSS_HEATMAP_VAL.append(loss_means_val["loss_heatmap_mean"])
-            LOSS_OFFSET_VAL.append(loss_means_val["loss_offset_mean"])
-            LOSS_SEM_VAL.append(loss_means_val["loss_sem_mean"])
+            LOSSES_VAL.append(loss_means_val["loss"])
+            LOSS_CLS_VAL.append(loss_means_val["loss_cls"])
+            LOSS_PTS_INIT_VAL.append(loss_means_val["loss_pts_init"])
+            LOSS_PTS_REFINE_VAL.append(loss_means_val["loss_pts_refine"])
+            LOSS_HEATMAP_VAL.append(loss_means_val["loss_heatmap"])
+            LOSS_OFFSET_VAL.append(loss_means_val["loss_offset"])
+            LOSS_SEM_VAL.append(loss_means_val["loss_sem"])
             save_model(detector, optimizer, epoch, LOSSES_TRAIN, LOSS_CLS_TRAIN, LOSS_PTS_INIT_TRAIN,
                        LOSS_PTS_REFINE_TRAIN, LOSS_HEATMAP_TRAIN, LOSS_OFFSET_TRAIN, LOSS_SEM_TRAIN, LOSSES_VAL,
                        LOSS_CLS_VAL, LOSS_PTS_INIT_VAL, LOSS_PTS_REFINE_VAL, LOSS_HEATMAP_VAL, LOSS_OFFSET_VAL,
