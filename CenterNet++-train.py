@@ -149,7 +149,7 @@ optimizer = build_optimizer(detector, optimizer_cfg)
 pytorch_total_params = sum(p.numel() for p in detector.parameters() if p.requires_grad)
 
 # Training
-f = open("tqdm_log.txt", "w")
+f = open("tqdm_log.txt", "w") if opts["nohup"] is True else None
 progress = tqdm(range(1, opts["num_epochs"] + 1), file=f)
 LOSS_CLS_TRAIN, LOSS_PTS_INIT_TRAIN, LOSS_PTS_REFINE_TRAIN, LOSS_HEATMAP_TRAIN = [], [], [], []
 LOSS_OFFSET_TRAIN, LOSS_SEM_TRAIN, LOSSES_TRAIN = [], [], []

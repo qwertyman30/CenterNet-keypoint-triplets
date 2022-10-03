@@ -5,7 +5,7 @@ from model.backbone.resnet import ResNet
 opts = dict()
 # for debugging purposes. if set to True, the output would be redirected
 # to another file in order to filter out the noise in the nohup output
-opts["nohup"] = True
+opts["nohup"] = False
 # transforms
 opts["dataset"] = "kitti"
 opts["keep_ratio"] = True
