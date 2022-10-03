@@ -93,9 +93,9 @@ class PyCenterNetDetector(SingleStageDetector):
         merged_bboxes, merged_scores = self.merge_aug_results(
             aug_bboxes, aug_scores, img_metas)
         det_bboxes, det_labels = multiclass_nms(merged_bboxes, merged_scores,
-                                                self.test_cfg.score_thr,
-                                                self.test_cfg.nms,
-                                                self.test_cfg.max_per_img)
+                                                self.test_cfg["score_thr"],
+                                                self.test_cfg["nms"],
+                                                self.test_cfg["max_per_img"])
 
         if rescale:
             _det_bboxes = det_bboxes
@@ -218,8 +218,8 @@ class PyCenterNetDetector(SingleStageDetector):
             outs = self.bbox_head(x)
             bbox_inputs = outs + (img_meta, self.test_cfg, False, True)
             det_bboxes, det_labels = self.bbox_head.get_bboxes(*bbox_inputs)[0]
-            keeped = self.remove_boxes(det_bboxes, self.test_cfg.scale_ranges[i // 2][0],
-                                       self.test_cfg.scale_ranges[i // 2][1])
+            keeped = self.remove_boxes(det_bboxes, self.test_cfg["scale_ranges"][i // 2][0],
+                                       self.test_cfg["scale_ranges"][i // 2][1])
             det_bboxes, det_labels = det_bboxes[keeped, :], det_labels[keeped]
             aug_bboxes.append(det_bboxes)
             aug_labels.append(det_labels)

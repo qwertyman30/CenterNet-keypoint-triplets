@@ -275,16 +275,12 @@ class DLA(nn.Module):
             y.append(x)
         return y
 
-    def init_weights(self, pretrained=True):
-        self.load_pretrained_model(data='imagenet', name='dla34', hash='ba72cf86')
+    def init_weights(self, pretrained=None):
+        self.load_pretrained_model(pretrained)
 
-    def load_pretrained_model(self, data='imagenet', name='dla34', hash='ba72cf86'):
+    def load_pretrained_model(self, pretrained):
         # fc = self.fc
-        if name.endswith('.pth'):
-            model_weights = torch.load(data + name)
-        else:
-            model_url = get_model_url(data, name, hash)
-            model_weights = model_zoo.load_url(model_url)
+        model_weights = torch.load(pretrained)
         num_classes = len(model_weights[list(model_weights.keys())[-1]])
         self.fc = nn.Conv2d(
             self.channels[-1], num_classes,
@@ -292,10 +288,105 @@ class DLA(nn.Module):
         self.load_state_dict(model_weights)
 
 
-def dla34(pretrained=True, **kwargs):  # DLA-34
+def dla34(pretrained=None, **kwargs):  # DLA-34
     model = DLA([1, 1, 1, 2, 2, 1],
                 [16, 32, 64, 128, 256, 512],
                 block=BasicBlock, **kwargs)
-    if pretrained:
-        model.load_pretrained_model(data='imagenet', name='dla34', hash='ba72cf86')
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla34(pretrained=None, **kwargs):  # DLA-34
+    model = DLA([1, 1, 1, 2, 2, 1],
+                [16, 32, 64, 128, 256, 512],
+                block=BasicBlock, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla46_c(pretrained=None, **kwargs):  # DLA-46-C
+    Bottleneck.expansion = 2
+    model = DLA([1, 1, 1, 2, 2, 1],
+                [16, 32, 64, 64, 128, 256],
+                block=Bottleneck, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla46x_c(pretrained=None, **kwargs):  # DLA-X-46-C
+    BottleneckX.expansion = 2
+    model = DLA([1, 1, 1, 2, 2, 1],
+                [16, 32, 64, 64, 128, 256],
+                block=BottleneckX, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla60x_c(pretrained=None, **kwargs):  # DLA-X-60-C
+    BottleneckX.expansion = 2
+    model = DLA([1, 1, 1, 2, 3, 1],
+                [16, 32, 64, 64, 128, 256],
+                block=BottleneckX, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla60(pretrained=None, **kwargs):  # DLA-60
+    Bottleneck.expansion = 2
+    model = DLA([1, 1, 1, 2, 3, 1],
+                [16, 32, 128, 256, 512, 1024],
+                block=Bottleneck, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla60x(pretrained=None, **kwargs):  # DLA-X-60
+    BottleneckX.expansion = 2
+    model = DLA([1, 1, 1, 2, 3, 1],
+                [16, 32, 128, 256, 512, 1024],
+                block=BottleneckX, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla102(pretrained=None, **kwargs):  # DLA-102
+    Bottleneck.expansion = 2
+    model = DLA([1, 1, 1, 3, 4, 1], [16, 32, 128, 256, 512, 1024],
+                block=Bottleneck, residual_root=True, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla102x(pretrained=None, **kwargs):  # DLA-X-102
+    BottleneckX.expansion = 2
+    model = DLA([1, 1, 1, 3, 4, 1], [16, 32, 128, 256, 512, 1024],
+                block=BottleneckX, residual_root=True, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla102x2(pretrained=None, **kwargs):  # DLA-X-102 64
+    BottleneckX.cardinality = 64
+    model = DLA([1, 1, 1, 3, 4, 1], [16, 32, 128, 256, 512, 1024],
+                block=BottleneckX, residual_root=True, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
+    return model
+
+
+def dla169(pretrained=None, **kwargs):  # DLA-169
+    Bottleneck.expansion = 2
+    model = DLA([1, 1, 2, 3, 5, 1], [16, 32, 128, 256, 512, 1024],
+                block=Bottleneck, residual_root=True, **kwargs)
+    if pretrained is not None:
+        model.load_pretrained_model(pretrained)
     return model

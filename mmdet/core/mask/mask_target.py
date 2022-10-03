@@ -102,7 +102,7 @@ def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
         >>> assert mask_targets.shape == (5,) + cfg['mask_size']
     """
     device = pos_proposals.device
-    mask_size = _pair(cfg.mask_size)
+    mask_size = _pair(cfg["mask_size"])
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
         proposals_np = pos_proposals.cpu().numpy()

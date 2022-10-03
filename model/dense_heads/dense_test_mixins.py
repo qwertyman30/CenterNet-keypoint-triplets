@@ -83,9 +83,9 @@ class BBoxTestMixin(object):
         det_bboxes, det_labels = multiclass_nms(
             merged_bboxes,
             merged_scores,
-            self.test_cfg.score_thr,
-            self.test_cfg.nms,
-            self.test_cfg.max_per_img,
+            self.test_cfg["score_thr"],
+            self.test_cfg["nms"],
+            self.test_cfg["max_per_img"],
             score_factors=merged_factors)
 
         if rescale:

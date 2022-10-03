@@ -8,9 +8,7 @@ Extend CenterNet++ to work with KITTI dataset
 
 ### Data
 
-```mkdir data```
-
-```cd data```
+```mkdir data && cd data```
 
 #### COCO
 
@@ -20,15 +18,9 @@ Extend CenterNet++ to work with KITTI dataset
 
 ```wget http://images.cocodataset.org/zips/train2017.zip http://images.cocodataset.org/zips/val2017.zip http://images.cocodataset.org/zips/test2017.zip```
 
-```unzip train2017.zip```
-
-```unzip val2017.zip```
-
-```unzip test2017.zip```
+```unzip train2017.zip && unzip val2017.zip && unzip test2017.zip```
 
 ```cd ..```
-
-```mkdir annotations```
 
 ```wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip```
 
@@ -36,17 +28,11 @@ Extend CenterNet++ to work with KITTI dataset
 
 #### KITTI
 
-```mkdir kitti && cd kitti```
-
-```mkdir images && cd images```
+```mkdir kitti && cd kitti && mkdir images && cd images```
 
 ```wget https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_image_2.zip https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_calib.zip https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_label_2.zip```
 
-```unzip data_object_image_2```
-
-```unzip data_object_label_2```
-
-```unzip data_object_calib```
+```unzip data_object_image_2 && unzip data_object_label_2 && unzip data_object_calib```
 
 The dataset directory should be like this:
 
@@ -63,7 +49,6 @@ The dataset directory should be like this:
 │   │   ├── images
             ├── training
             ├── testing
-
 ```
 
 ##### 1. Install pytorch

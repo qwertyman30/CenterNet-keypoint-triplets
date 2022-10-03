@@ -1,32 +1,27 @@
-import pycocotools.coco as coco
+import cv2
 import numpy as np
 import mmcv
-import cv2
-
-import os.path as osp
-
-import numpy as np
 from torch.utils.data import Dataset
-
+import pycocotools.coco as coco
+import os.path as osp
 # from mmdet.core import eval_map, eval_recalls
 from .utils.loaders import LoadAnnotations, LoadImageFromFile
 from .utils.transforms import Resize, RandomFlip, Normalize, ColorTransform
 from .utils.formatting import Collect, ImageToTensor, RPDV2FormatBundle, LoadRPDV2Annotations
+from collections import OrderedDict
 
 
 class KITTI(Dataset):
     CLASSES = ['Pedestrian', 'Car', 'Cyclist']
 
     def __init__(self, opts,
-                 test_mode=False,
-                 filter_empty_gt=True):
+                 test_mode=False):
         self.ann_file = opts["ann_file"]
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
         self.split = opts["split"]
         self.test_mode = test_mode
-        self.filter_empty_gt = filter_empty_gt
 
         self.mean = opts["mean"]
         self.std = opts["std"]
@@ -41,7 +36,7 @@ class KITTI(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=True)
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
@@ -214,3 +209,115 @@ class KITTI(Dataset):
                 idx = self._rand_another(idx)
                 continue
             return data
+
+    def format_results(self, results, save_dir=None, save_debug_dir=None, **kwargs):
+        """Format the results to txt (standard format for Kitti evaluation).
+        Args:
+            results (list): Testing results of the dataset.
+            save_dir (str | None): The prefix of txt files. It includes
+                the file path and the prefix of filename, e.g., "a/b/prefix".
+                If not specified, a temp file will be created. Default: None.
+        Returns:
+            tuple: (result_files, tmp_dir), result_files is a dict containing
+                the txt filepaths, tmp_dir is the temporal directory created
+                for saving txt files when txtfile_prefix is not specified.
+        """
+        assert isinstance(results, list), 'results must be a list'
+        assert len(results) == len(self), (
+            'The length of results is not equal to the dataset len: {} != {}'.
+            format(len(results), len(self)))
+
+        det_annos = []
+        for idx, bbox_list in enumerate(results):
+            sample_idx = self.data_infos[idx]['image_idx']
+            num_example = 0
+
+            anno = {'name': [], 'truncated': [], 'occluded': [], 'alpha': [], 'bbox': [], 'dimensions': [],
+                    'location': [], 'rotation_y': [], 'score': []}
+            for cls_idx, cls_bbox in enumerate(bbox_list):
+                cls_name = self.cat_ids[cls_idx]
+                bbox_2d_preds = cls_bbox[:, :4]
+                scores = cls_bbox[:, 4]
+                # TODO: 3d bbox prediction
+                for bbox_2d_pred, score in zip(bbox_2d_preds, scores):
+                    # TODO: out of range detection, should be filtered in the network part
+                    anno["score"].append(score)
+                    anno["name"].append(cls_name)
+                    anno["truncated"].append(0.0)
+                    anno["occluded"].append(0)
+                    anno["bbox"].append(bbox_2d_pred)
+                    anno["alpha"].append(0.)
+                    anno["dimensions"].append(
+                        np.array([0, 0, 0], dtype=np.float32))
+                    anno["location"].append(
+                        np.array([-1000, -1000, -1000], dtype=np.float32))
+                    anno["rotation_y"].append(0.)
+                    num_example += 1
+
+            if num_example != 0:
+                anno = {k: np.stack(v) for k, v in anno.items()}
+            else:
+                anno = {
+                    'name': np.array([]), 'truncated': np.array([]), 'occluded': np.array([]),
+                    'alpha': np.array([]), 'bbox': np.zeros([0, 4]), 'dimensions': np.zeros([0, 3]),
+                    'location': np.zeros([0, 3]), 'rotation_y': np.array([]), 'score': np.array([])}
+
+            anno["sample_idx"] = np.array(
+                [sample_idx] * num_example, dtype=np.int64)
+            det_annos.append(anno)
+
+            if save_dir is not None:
+                cur_det_file = osp.join(
+                    save_dir, 'results', '%06d.txt' % sample_idx)
+                print("saving results to", cur_det_file)
+
+                # dump detection results into txt files
+                with open(cur_det_file, 'w') as f:
+                    bbox = anno['bbox']
+                    loc = anno['location']
+                    dims = anno['dimensions']  # lhw -> hwl
+
+                    for idx in range(len(bbox)):
+                        print('%s -1 -1 %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f'
+                              % (anno['name'][idx], anno['alpha'][idx], bbox[idx][0], bbox[idx][1], bbox[idx][2],
+                                 bbox[idx][3],
+                                 dims[idx][1], dims[idx][2], dims[idx][0], loc[idx][0], loc[idx][1], loc[idx][2],
+                                 anno['rotation_y'][idx], anno['score'][idx]), file=f)
+
+            if save_debug_dir is not None:
+                # dump debug infos into pkl files
+                cur_debug_file = osp.join(
+                    save_debug_dir, 'det_info_%06d.pkl' % sample_idx)
+                debug_infos = {
+                    'anno': anno,
+                    'gt_anno': self.data_infos[idx]["annos"],
+                }
+                with open(cur_debug_file, 'wb') as f:
+                    mmcv.dump(debug_infos, f)
+
+        return det_annos
+
+    def evaluate(self,
+                 results,
+                 txtfile_prefix=None):
+        if 'annos' not in self.data_infos[0]:
+            print('The testing results of the whole dataset is empty.')
+            raise ValueError(
+                "annotations not available for the test set of KITTI")
+
+        print('Evaluating KITTI object detection \n')
+        det_annos = self.format_results(results, txtfile_prefix)
+        gt_annos = [x['annos'] for x in self.data_infos]
+
+        from kitti_object_eval_python.eval import get_official_eval_result
+        eval_results = get_official_eval_result(
+            gt_annos, det_annos, self.CLASSES)
+
+        return_results = OrderedDict()
+        for cls_name, ret in eval_results.items():
+            for k, v in ret.items():
+                msg = ','.join([f"{vv:.3f}" for vv in v])
+                return_results[f"{cls_name}_{k}"] = msg
+                print(f"{cls_name}_{k}:  {msg}")
+
+        return return_results

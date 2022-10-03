@@ -84,12 +84,12 @@ def build_model_from_cfg(config_path, checkpoint_path, cfg_options=None):
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
-    cfg.model.pretrained = None
-    cfg.data.test.test_mode = True
+    cfg["model"]["pretrained"] = None
+    cfg["data"]["test"]["test_mode"] = True
 
     # build the model
-    cfg.model.train_cfg = None
-    model = build_detector(cfg.model, test_cfg=cfg.get('test_cfg'))
+    cfg["model"]["train_cfg"] = None
+    model = build_detector(cfg["model"], test_cfg=cfg.get('test_cfg'))
     load_checkpoint(model, checkpoint_path, map_location='cpu')
     model.cpu().eval()
     return model

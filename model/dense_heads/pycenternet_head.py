@@ -96,9 +96,9 @@ class PyCenterNetHead(AnchorFreeHead):
         self.point_generators = [PointGenerator() for _ in self.point_strides]
 
         if self.train_cfg:
-            self.init_assigner = build_assigner(self.train_cfg.init.assigner)
-            self.refine_assigner = build_assigner(self.train_cfg.refine.assigner)
-            self.hm_assigner = build_assigner(self.train_cfg.heatmap.assigner)
+            self.init_assigner = build_assigner(self.train_cfg["init"]["assigner"])
+            self.refine_assigner = build_assigner(self.train_cfg["refine"]["assigner"])
+            self.hm_assigner = build_assigner(self.train_cfg["heatmap"]["assigner"])
             # use PseudoSampler when sampling is False
             sampler_cfg = dict(type='PseudoSampler')
             self.sampler = build_sampler(sampler_cfg, context=self)
@@ -1222,11 +1222,11 @@ class PyCenterNetHead(AnchorFreeHead):
         mlvl_br_scores = torch.cat([mlvl_br_scores, br_padding], dim=1)
 
         det_tl_bboxes, det_tl_labels = multiclass_nms(mlvl_tl_bboxes, mlvl_tl_scores,
-                                                      cfg.score_thr, cfg.nms,
-                                                      cfg.max_per_img)
+                                                      cfg["score_thr"], cfg["nms"],
+                                                      cfg["max_per_img"])
         det_br_bboxes, det_br_labels = multiclass_nms(mlvl_br_bboxes, mlvl_br_scores,
-                                                      cfg.score_thr, cfg.nms,
-                                                      cfg.max_per_img)
+                                                      cfg["score_thr"], cfg["nms"],
+                                                      cfg["max_per_img"])
 
         det_bboxes, det_scores, det_labels = self.decode(det_tl_bboxes, det_tl_labels,
                                                          det_br_bboxes, det_br_labels,
@@ -1236,10 +1236,10 @@ class PyCenterNetHead(AnchorFreeHead):
             bboxes = det_bboxes.new_zeros((0, 5))
             labels = det_bboxes.new_zeros((0,), dtype=torch.long)
         else:
-            dets, keep = batched_nms(det_bboxes, det_scores, det_labels, cfg.nms)
-            if cfg.max_per_img > 0:
-                bboxes = dets[:cfg.max_per_img]
-                keep = keep[:cfg.max_per_img]
+            dets, keep = batched_nms(det_bboxes, det_scores, det_labels, cfg["nms"])
+            if cfg["max_per_img"] > 0:
+                bboxes = dets[:cfg["max_per_img"]]
+                keep = keep[:cfg["max_per_img"]]
                 labels = det_labels[keep]
         return bboxes, labels
 

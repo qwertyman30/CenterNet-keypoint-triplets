@@ -12,17 +12,16 @@ import torch
 import matplotlib.pyplot as plt
 from mmcv.runner import build_optimizer
 
-from dataset.coco import COCO
-from dataset.kitti import KITTI
+from dataset import DatasetFactory
 from dataset.utils.collate import collate
 
 from model.dense_heads.pycenternet_head import PyCenterNetHead
 from model.backbone.resnet import ResNet
-# from model.backbone.dla import dla34
+from model.backbone.dla import dla34
 from model.neck.fpn import FPN
 from model.detectors.pycenternet_detector import PyCenterNetDetector
 from model.utils.utils import clip_grads, save_model, update_lr
-from model.model_config import *
+from config import *
 from mmcv.parallel.data_parallel import scatter_kwargs
 
 print(torch.cuda.is_available())
@@ -34,10 +33,7 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 # Dataset and loader
-if opts["dataset"] == "coco":
-    dataset = COCO(opts)
-elif opts["dataset"] == "kitti":
-    dataset = KITTI(opts)
+dataset = DatasetFactory(opts)
 train_loader = torch.utils.data.DataLoader(
     dataset,
     batch_size=opts["batch_size"],
@@ -46,13 +42,27 @@ train_loader = torch.utils.data.DataLoader(
     collate_fn=collate,
     pin_memory=True)
 
+b_name = opts["backbone"]
+
 # Model
-backbone = ResNet(**backbone_cfg).cuda()
-# backbone = dla34(pretrained=True).cuda()
+if "dla" in b_name:
+    pretrained = backbone_cfg[b_name]["pretrained"]
+    backbone = backbone_cfg[b_name]["model"]().cuda()
+elif "resnet" in b_name:
+    pretrained = backbone_cfg[b_name]["pretrained"]
+    backbone = backbone_cfg[opts["backbone"]]["model"]
+    backbone_cfg[b_name].pop("model")
+    backbone = backbone(**backbone_cfg[b_name]).cuda()
+# if opts["backbone"] == "resnet":
+#     backbone = ResNet(**backbone_cfg).cuda()
+#     pretrained = "pretrained/resnet50-19c8e357.pth"
+# elif opts["backbone"] == "dla34":
+#     backbone = dla34().cuda()
+#     pretrained = "pretrained/dla34-ba72cf86.pth"
 neck = FPN(**neck_cfg).cuda()
 bbox_head = PyCenterNetHead(**bbox_head_cfg).cuda()
 detector = PyCenterNetDetector(backbone, neck, bbox_head, train_cfg=train_cfg, test_cfg=test_cfg,
-                               pretrained="pretrained/resnet50-19c8e357.pth").cuda()
+                               pretrained=pretrained).cuda()
 optimizer = build_optimizer(detector, optimizer_cfg)
 
 # Training
@@ -125,7 +135,9 @@ for epoch in progress:
                    LOSSES, LOSS_CLS, LOSS_PTS_INIT, LOSS_PTS_REFINE,
                    LOSS_HEATMAP, LOSS_OFFSET, LOSS_SEM)
     print(
-        f"LOSS_CLS: {loss_cls_mean}, LOSS_PTS_INIT: {loss_pts_init_mean}, LOSS_PTS_REFINE: {loss_pts_refine_mean}, LOSS_HEATMAP: {loss_heatmap_mean}, LOSS_OFFSET: {loss_offset_mean}, LOSS_SEM: {loss_sem_mean}, LOSS: {loss_mean}\n")
+        f"LOSS_CLS: {loss_cls_mean}, LOSS_PTS_INIT: {loss_pts_init_mean}, LOSS_PTS_REFINE: {loss_pts_refine_mean}, "
+        f"LOSS_HEATMAP: {loss_heatmap_mean}, LOSS_OFFSET: {loss_offset_mean}, LOSS_SEM: {loss_sem_mean}, "
+        f"LOSS: {loss_mean}\n")
 
 # Plotting losses
 plt.plot(LOSSES)

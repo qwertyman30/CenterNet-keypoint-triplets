@@ -1,11 +1,19 @@
 import pycocotools.coco as coco
-import numpy as np
 import mmcv
 
-from .Custom import CustomDataset
+import os.path as osp
+
+import numpy as np
+from torch.utils.data import Dataset
+
+# from mmdet.core import eval_map, eval_recalls
+from .utils.loaders import LoadAnnotations, LoadImageFromFile
+from .utils.transforms import Resize, RandomFlip, Normalize, Pad
+from .utils.formatting import Collect, RPDV2FormatBundle, LoadRPDV2Annotations
+from .utils.test_augs import MultiScaleFlipAug
 
 
-class COCO(CustomDataset):
+class COCO(Dataset):
     CLASSES = [
         'person', 'bicycle', 'car', 'motorcycle', 'airplane',
         'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
@@ -20,6 +28,139 @@ class COCO(CustomDataset):
         'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
         'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
         'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+
+    def __init__(self, opts,
+                 test_mode=False,
+                 filter_empty_gt=True):
+        self.ann_file = opts["ann_file"]
+        self.data_root = opts["data_root"]
+        self.img_prefix = opts["img_prefix"]
+        self.seg_prefix = opts["seg_prefix"]
+        self.test_mode = test_mode
+        self.filter_empty_gt = filter_empty_gt
+
+        # load annotations
+        self.data_infos = self.load_annotations(self.ann_file)
+
+        # filter images too small and containing no annotations
+        if not test_mode:
+            valid_inds = self._filter_imgs()
+            self.data_infos = [self.data_infos[i] for i in valid_inds]
+            # set group flag for the sampler
+            self._set_group_flag()
+
+        # Loading pipeline
+        self.LoadImageFromFile = LoadImageFromFile(to_float=opts["to_float"])
+        self.LoadAnnotations = LoadAnnotations(with_bbox=True)
+
+        # transformation pipeline training
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range',
+                                   keep_ratio=opts["keep_ratio"])
+        self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
+        self.Normalize = Normalize(mean=opts["mean"], std=opts["std"], to_rgb=True)
+        self.Pad = Pad(size_divisor=opts["size_divisor"])
+
+        # formatting pipeline
+        self.LoadRPDV2Annotations = LoadRPDV2Annotations()
+        self.RPDV2FormatBundle = RPDV2FormatBundle()
+        self.Collect_train = Collect(keys=['img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'])
+
+        # test transforms
+        self.MultiScaleFlipAug = MultiScaleFlipAug(img_scale=(736, 512), flip=False)
+
+    def _set_group_flag(self):
+        """Set flag according to image aspect ratio.
+
+        Images with aspect ratio greater than 1 will be set as group 1,
+        otherwise group 0.
+        """
+        self.flag = np.zeros(len(self), dtype=np.uint8)
+        for i in range(len(self)):
+            img_info = self.data_infos[i]
+            if img_info['width'] / img_info['height'] > 1:
+                self.flag[i] = 1
+
+    def prepare_train_img(self, idx):
+        """Get training data and annotations after pipeline.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Training data and annotation after pipeline with new keys \
+                introduced by pipeline.
+        """
+
+        img_info = self.data_infos[idx]
+        ann_info = self.get_ann_info(idx)
+        results = dict(img_info=img_info, ann_info=ann_info)
+
+        results['img_prefix'] = self.img_prefix
+        results['seg_prefix'] = self.seg_prefix
+        results['bbox_fields'] = []
+        results['mask_fields'] = []
+        results['seg_fields'] = []
+
+        # pipeline of transforms
+        results = self.LoadImageFromFile(results)
+        results = self.LoadAnnotations(results)
+        results = self.Resize_train(results)
+        results = self.RandomFlip_train(results)
+        results = self.Normalize(results)
+        results = self.Pad(results)
+        results = self.LoadRPDV2Annotations(results)
+        results = self.RPDV2FormatBundle(results)
+        results = self.Collect_train(results)
+        return results
+
+    def prepare_test_img(self, idx):
+        """Get testing data  after pipeline.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Testing data after pipeline with new keys introduced by \
+                pipeline.
+        """
+        img_info = self.data_infos[idx]
+        results = dict(img_info=img_info)
+        results['img_prefix'] = self.img_prefix
+        results['bbox_fields'] = []
+
+        results = self.LoadImageFromFile(results)
+        results = self.MultiScaleFlipAug(results)
+
+        return results
+
+    def _rand_another(self, idx):
+        """Get another random index from the same group as the given index."""
+        pool = np.where(self.flag == self.flag[idx])[0]
+        return np.random.choice(pool)
+
+    def __getitem__(self, idx):
+        """Get training/test data after pipeline.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Training/test data (with annotation if `test_mode` is set \
+                True).
+        """
+
+        if self.test_mode:
+            return self.prepare_test_img(idx)
+        while True:
+            data = self.prepare_train_img(idx)
+            if data is None:
+                idx = self._rand_another(idx)
+                continue
+            return data
+
+    def __len__(self):
+        """Total number of samples of data."""
+        return len(self.data_infos)
 
     def _parse_ann_info(self, img_info, ann_info):
         """Parse bbox and mask annotation.
