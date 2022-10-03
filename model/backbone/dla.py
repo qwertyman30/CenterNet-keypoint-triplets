@@ -1,14 +1,7 @@
 import os
-import math
-import numpy as np
-
 import torch
 from torch import nn
-import torch.utils.model_zoo as model_zoo
 
-from dcn_v2 import DCN
-
-BatchNorm = nn.BatchNorm2d
 BN_MOMENTUM = 0.1
 
 

@@ -5,6 +5,7 @@ from .smooth_l1_loss import SmoothL1Loss, L1Loss
 from .gaussian_focal_loss import GaussianFocalLoss
 
 __all__ = [
-    "CrossEntropyLoss", "FocalLoss", "SEPFocalLoss", "GaussianFocalLoss", "IoULoss", "GIoULoss", "DIoULoss", "CIoULoss",
+    "CrossEntropyLoss", "FocalLoss", "SEPFocalLoss", "GaussianFocalLoss",
+    "IoULoss", "GIoULoss", "DIoULoss", "CIoULoss",
     "SmoothL1Loss", "L1Loss",
 ]

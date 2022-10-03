@@ -1,5 +1,7 @@
 data
 build
+saved_models
+pretrained
 mmdet.egg-info
 **/__pycache__/
 .idea/

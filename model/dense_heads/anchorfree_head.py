@@ -6,7 +6,6 @@ from mmcv.cnn import ConvModule, bias_init_with_prob, normal_init
 from mmcv.runner import force_fp32
 
 from mmdet.core import multi_apply
-# from ..builder import HEADS
 from .base_dense_head import BaseDenseHead
 from .dense_test_mixins import BBoxTestMixin
 from ..losses import FocalLoss, IoULoss

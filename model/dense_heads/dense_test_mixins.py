@@ -1,5 +1,5 @@
-from inspect import signature
 import torch
+from inspect import signature
 from mmdet.core import bbox2result, bbox_mapping_back, multiclass_nms
 
 

@@ -10,7 +10,6 @@ from mmdet.core import images_to_levels, multi_apply, multiclass_nms, unmap
 from mmcv.ops.nms import batched_nms
 from mmdet.ops import TLPool, BRPool
 from mmcv.ops import DeformConv2d, ModulatedDeformConv2dPack
-# from ..builder import HEADS
 from .anchorfree_head import AnchorFreeHead
 from ..losses import FocalLoss, SmoothL1Loss, GaussianFocalLoss, SEPFocalLoss
 
@@ -27,7 +26,7 @@ class DCNConvModule(nn.Module):
     ):
         super(DCNConvModule, self).__init__()
 
-        self.conv = ModulatedDeformConv2dPack(in_channels, out_channels, kernel_size, 1, dcn_pad)
+        self.conv = ModulatedDeformConv2dPack(in_channels, out_channels, kernel_size, 1, dcn_pad, dilation)
         self.bn = nn.GroupNorm(num_groups, out_channels)
 
         self.relu = nn.ReLU(inplace=True)

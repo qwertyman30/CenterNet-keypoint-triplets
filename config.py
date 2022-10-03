@@ -3,8 +3,9 @@ from model.backbone.resnet import ResNet
 
 # Configuration
 opts = dict()
-opts["data_root"] = "data/"
-opts["seg_prefix"] = None
+# for debugging purposes. if set to True, the output would be redirected
+# to another file in order to filter out the noise in the nohup output
+opts["nohup"] = True
 # transforms
 opts["dataset"] = "kitti"
 opts["keep_ratio"] = True
@@ -19,6 +20,9 @@ opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 2000
 opts["lr"] = 1e-4
 opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 1000, 1500]
 opts["save_interval"] = 10 if opts["dataset"] == "coco" else 250
+# dataset config
+opts["data_root"] = "data/"
+opts["seg_prefix"] = None
 if opts["to_float"]:
     opts["mean"] = [0.485, 0.456, 0.406]
     opts["std"] = [0.229, 0.224, 0.225]
@@ -77,19 +81,6 @@ backbone_cfg = {
 }
 norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 
-# if opts["backbone"] == "resnet":
-#     backbone_cfg = dict(depth=50,
-#                         num_stages=4,
-#                         out_indices=(0, 1, 2, 3),
-#                         frozen_stages=1,
-#                         norm_cfg=dict(type='BN', requires_grad=True),
-#                         norm_eval=True,
-#                         style='pytorch')
-#     in_channels = [256, 512, 1024, 2048]
-# elif opts["backbone"] == "dla":
-#     backbone_cfg = dict(levels=[1, 1, 1, 2, 2, 1], channels=[64, 128, 256, 512, 1024, 2048], num_classes=3)
-#     in_channels = [64, 128, 256, 512, 1024, 2048]
-
 neck_cfg = dict(
     in_channels=backbone_cfg[opts["backbone"]]["channels"] if "dla" in opts["backbone"] else [256, 512, 1024, 2048],
     out_channels=256,
@@ -129,7 +120,7 @@ bbox_head_cfg = dict(num_classes=opts["num_classes"],
                          gamma=2.0,
                          alpha=0.25,
                          loss_weight=0.1))
-# Pycenternet_detector cfg
+# Detector cfg
 train_cfg = dict(
     init=dict(
         assigner=dict(type='PointAssignerV2', scale=4, pos_num=1),
