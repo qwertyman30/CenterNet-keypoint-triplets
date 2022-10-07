@@ -40,7 +40,10 @@ class KITTI(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False)
+        back = "resnet50"
+        if "dla" in opts["backbone"]:
+            back = "dla"
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False, backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
@@ -66,6 +69,7 @@ class KITTI(Dataset):
         data_infos = []
         for i in self.img_ids:
             info = self.coco.loadImgs([i])[0]
+            info["annos"] = self.coco.loadAnns(self.coco.getAnnIds(imgIds=[i], catIds=self.cat_ids))
             info['filename'] = info['file_name']
             data_infos.append(info)
         return data_infos

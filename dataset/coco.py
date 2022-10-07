@@ -58,8 +58,10 @@ class COCO(Dataset):
         self.LoadAnnotations = LoadAnnotations(with_bbox=True)
 
         # transformation pipeline training
-        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range',
-                                   keep_ratio=opts["keep_ratio"])
+        back = "resnet50"
+        if "dla" in opts["backbone"]:
+            back = "dla"
+        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False, backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.Normalize = Normalize(mean=opts["mean"], std=opts["std"], to_rgb=True)
         self.Pad = Pad(size_divisor=opts["size_divisor"])

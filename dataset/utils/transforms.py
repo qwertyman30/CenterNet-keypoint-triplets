@@ -56,7 +56,8 @@ class Resize(object):
                  keep_ratio=True,
                  bbox_clip_border=True,
                  backend='cv2',
-                 override=False):
+                 override=False,
+                 backbone="dla"):
         if img_scale is None:
             self.img_scale = None
         else:
@@ -79,6 +80,8 @@ class Resize(object):
         # TODO: refactor the override option in Resize
         self.override = override
         self.bbox_clip_border = bbox_clip_border
+        if backbone == "dla":
+            self.correction = True
 
     @staticmethod
     def random_select(img_scales):
@@ -97,8 +100,7 @@ class Resize(object):
         img_scale = img_scales[scale_idx]
         return img_scale, scale_idx
 
-    @staticmethod
-    def random_sample(img_scales):
+    def random_sample(self, img_scales):
         """Randomly sample an img_scale when ``multiscale_mode=='range'``.
 
         Args:
@@ -114,12 +116,14 @@ class Resize(object):
 
         img_scale_long = [max(s) for s in img_scales]
         img_scale_short = [min(s) for s in img_scales]
-        long_edge = np.random.randint(
-            min(img_scale_long),
-            max(img_scale_long) + 1)
-        short_edge = np.random.randint(
-            min(img_scale_short),
-            max(img_scale_short) + 1)
+        long_edge = np.random.randint(min(img_scale_long),
+                                      max(img_scale_long) + 1)
+        short_edge = np.random.randint(min(img_scale_short),
+                                       max(img_scale_short) + 1)
+        # necessary for dla backbone
+        if self.correction:
+            long_edge = long_edge + (64 - long_edge % 64)
+            short_edge = short_edge + (64 - short_edge % 64)
         img_scale = (long_edge, short_edge)
         return img_scale, None
 
@@ -187,11 +191,10 @@ class Resize(object):
         """Resize images with ``results['scale']``."""
         for key in results.get('img_fields', ['img']):
             if self.keep_ratio:
-                img, scale_factor = mmcv.imrescale(
-                    results[key],
-                    results['scale'],
-                    return_scale=True,
-                    backend=self.backend)
+                img, scale_factor = mmcv.imrescale(results[key],
+                                                   results['scale'],
+                                                   return_scale=True,
+                                                   backend=self.backend)
                 # the w_scale and h_scale has minor difference
                 # a real fix should be done in the mmcv.imrescale in the future
                 new_h, new_w = img.shape[:2]
@@ -199,11 +202,10 @@ class Resize(object):
                 w_scale = new_w / w
                 h_scale = new_h / h
             else:
-                img, w_scale, h_scale = mmcv.imresize(
-                    results[key],
-                    results['scale'],
-                    return_scale=True,
-                    backend=self.backend)
+                img, w_scale, h_scale = mmcv.imresize(results[key],
+                                                      results['scale'],
+                                                      return_scale=True,
+                                                      backend=self.backend)
             results[key] = img
 
             scale_factor = np.array([w_scale, h_scale, w_scale, h_scale],
@@ -404,8 +406,8 @@ class RandomFlip(object):
         if results['flip']:
             # flip image
             for key in results.get('img_fields', ['img']):
-                results[key] = mmcv.imflip(
-                    results[key], direction=results['flip_direction'])
+                results[key] = mmcv.imflip(results[key],
+                                           direction=results['flip_direction'])
             # flip bboxes
             for key in results.get('bbox_fields', []):
                 results[key] = self.bbox_flip(results[key],
@@ -443,11 +445,13 @@ class Pad(object):
         """Pad images according to ``self.size``."""
         for key in results.get('img_fields', ['img']):
             if self.size is not None:
-                padded_img = mmcv.impad(
-                    results[key], shape=self.size, pad_val=self.pad_val)
+                padded_img = mmcv.impad(results[key],
+                                        shape=self.size,
+                                        pad_val=self.pad_val)
             elif self.size_divisor is not None:
-                padded_img = mmcv.impad_to_multiple(
-                    results[key], self.size_divisor, pad_val=self.pad_val)
+                padded_img = mmcv.impad_to_multiple(results[key],
+                                                    self.size_divisor,
+                                                    pad_val=self.pad_val)
             results[key] = padded_img
         results['pad_shape'] = padded_img.shape
         results['pad_fixed_size'] = self.size
@@ -503,8 +507,9 @@ class Normalize(object):
         for key in results.get('img_fields', ['img']):
             results[key] = mmcv.imnormalize(results[key], self.mean, self.std,
                                             self.to_rgb)
-        results['img_norm_cfg'] = dict(
-            mean=self.mean, std=self.std, to_rgb=self.to_rgb)
+        results['img_norm_cfg'] = dict(mean=self.mean,
+                                       std=self.std,
+                                       to_rgb=self.to_rgb)
         return results
 
     def __repr__(self):

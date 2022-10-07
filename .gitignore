@@ -7,3 +7,5 @@ mmdet.egg-info
 .idea/
 .ipynb_checkpoints/
 *.ipynb
+results
+.vscode

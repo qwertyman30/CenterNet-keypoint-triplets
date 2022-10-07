@@ -37,7 +37,8 @@ if opts["dataset"] == "kitti":
     elif opts["split"] == "val":
         opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
-    opts["img_scale"] = [(1280, 384)]
+    # opts["img_scale"] = [(1280, 384)]
+    opts["img_scale"] = [(900, 256), (900, 608)]
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
     opts["ann_file_train"] = "data/coco/annotations/instances_train2017.json"
