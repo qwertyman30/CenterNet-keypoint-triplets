@@ -19,8 +19,9 @@ class PyCenterNetDetector(SingleStageDetector):
                  train_cfg=None,
                  test_cfg=None,
                  pretrained=None):
-        super(PyCenterNetDetector, self).__init__(backbone, neck, bbox_head, train_cfg,
-                                                  test_cfg, pretrained)
+        super(PyCenterNetDetector,
+              self).__init__(backbone, neck, bbox_head, train_cfg, test_cfg,
+                             pretrained)
 
     def forward_train(self,
                       img,
@@ -32,9 +33,10 @@ class PyCenterNetDetector(SingleStageDetector):
                       gt_sem_weights=None):
         x = self.extract_feat(img)
         outs = self.bbox_head(x)
-        loss_inputs = outs + (gt_bboxes, gt_sem_map, gt_sem_weights, gt_labels, img_metas)
-        losses = self.bbox_head.loss(
-            *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
+        loss_inputs = outs + (gt_bboxes, gt_sem_map, gt_sem_weights, gt_labels,
+                              img_metas)
+        losses = self.bbox_head.loss(*loss_inputs,
+                                     gt_bboxes_ignore=gt_bboxes_ignore)
         return losses
 
     def merge_aug_results(self, aug_bboxes, aug_scores, img_metas):
@@ -124,7 +126,8 @@ class PyCenterNetDetector(SingleStageDetector):
             img_shape = img_info[0]['img_shape']
             scale_factor = img_info[0]['scale_factor']
             flip = img_info[0]['flip']
-            bboxes[:, :4] = bbox_mapping_back(bboxes[:, :4], img_shape, scale_factor, flip)
+            bboxes[:, :4] = bbox_mapping_back(bboxes[:, :4], img_shape,
+                                              scale_factor, flip)
             recovered_bboxes.append(bboxes)
         bboxes = torch.cat(recovered_bboxes, dim=0)
         if aug_labels is None:
@@ -135,7 +138,8 @@ class PyCenterNetDetector(SingleStageDetector):
 
     def remove_boxes(self, boxes, min_scale, max_scale):
         areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-        keep = torch.nonzero((areas >= min_scale * min_scale) & (areas <= max_scale * max_scale),
+        keep = torch.nonzero((areas >= min_scale * min_scale) &
+                             (areas <= max_scale * max_scale),
                              as_tuple=False).squeeze(1)
 
         return keep
@@ -184,10 +188,12 @@ class PyCenterNetDetector(SingleStageDetector):
                 soft_index = np.where(soft_det_accu[:, 4] >= 0.05)[0]
                 soft_det_accu = soft_det_accu[soft_index, :]
 
-                det_accu[:, 0:4] = det_accu[:, 0:4] * np.tile(det_accu[:, -1:], (1, 4))
+                det_accu[:, 0:4] = det_accu[:, 0:4] * np.tile(
+                    det_accu[:, -1:], (1, 4))
                 max_score = np.max(det_accu[:, 4])
                 det_accu_sum = np.zeros((1, 5))
-                det_accu_sum[:, 0:4] = np.sum(det_accu[:, 0:4], axis=0) / np.sum(det_accu[:, -1:])
+                det_accu_sum[:, 0:4] = np.sum(
+                    det_accu[:, 0:4], axis=0) / np.sum(det_accu[:, -1:])
                 det_accu_sum[:, 4] = max_score
 
                 if soft_det_accu.shape[0] > 0:
@@ -218,8 +224,9 @@ class PyCenterNetDetector(SingleStageDetector):
             outs = self.bbox_head(x)
             bbox_inputs = outs + (img_meta, self.test_cfg, False, True)
             det_bboxes, det_labels = self.bbox_head.get_bboxes(*bbox_inputs)[0]
-            keeped = self.remove_boxes(det_bboxes, self.test_cfg["scale_ranges"][i // 2][0],
-                                       self.test_cfg["scale_ranges"][i // 2][1])
+            keeped = self.remove_boxes(
+                det_bboxes, self.test_cfg["scale_ranges"][i // 2][0],
+                self.test_cfg["scale_ranges"][i // 2][1])
             det_bboxes, det_labels = det_bboxes[keeped, :], det_labels[keeped]
             aug_bboxes.append(det_bboxes)
             aug_labels.append(det_labels)
@@ -238,23 +245,25 @@ class PyCenterNetDetector(SingleStageDetector):
             bboxes_j, scores_j = self.bboxes_vote(bboxes_j, scores_j)
 
             if len(bboxes_j) > 0:
-                det_bboxes.append(torch.cat([bboxes_j, scores_j[:, None]], dim=1))
-                det_labels.append(torch.full((bboxes_j.shape[0],), j, dtype=torch.int64,
-                                             device=scores_j.device))
+                det_bboxes.append(
+                    torch.cat([bboxes_j, scores_j[:, None]], dim=1))
+                det_labels.append(
+                    torch.full((bboxes_j.shape[0], ),
+                               j,
+                               dtype=torch.int64,
+                               device=scores_j.device))
 
         if len(det_bboxes) > 0:
             det_bboxes = torch.cat(det_bboxes, dim=0)
             det_labels = torch.cat(det_labels)
         else:
             det_bboxes = merged_bboxes.new_zeros((0, 5))
-            det_labels = merged_bboxes.new_zeros((0,), dtype=torch.long)
+            det_labels = merged_bboxes.new_zeros((0, ), dtype=torch.long)
 
         if det_bboxes.shape[0] > 1000 > 0:
             cls_scores = det_bboxes[:, 4]
-            image_thresh, _ = torch.kthvalue(
-                cls_scores.cpu(),
-                det_bboxes.shape[0] - 1000 + 1
-            )
+            image_thresh, _ = torch.kthvalue(cls_scores.cpu(),
+                                             det_bboxes.shape[0] - 1000 + 1)
             keep = cls_scores >= image_thresh.item()
             keep = torch.nonzero(keep, as_tuple=False).squeeze(1)
             det_bboxes = det_bboxes[keep]
@@ -289,20 +298,14 @@ class PyCenterNetDetector(SingleStageDetector):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        self.imshow_corners(
-            img,
-            xys_result,
-            out_file=out_file)
+        self.imshow_corners(img, xys_result, out_file=out_file)
 
         if not (show or out_file):
             warnings.warn('show==False and out_file is not specified, only '
                           'result image will be returned')
             return img
 
-    def imshow_corners(self,
-                       img,
-                       xys_result,
-                       out_file=None):
+    def imshow_corners(self, img, xys_result, out_file=None):
 
         img = imread(img)
 

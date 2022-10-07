@@ -166,7 +166,7 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
             assert 'proposals' not in kwargs
             return self.aug_test(imgs, img_metas, **kwargs)
 
-    @auto_fp16(apply_to=('img',))
+    @auto_fp16(apply_to=('img', ))
     def forward(self, img, img_metas, return_loss=True, **kwargs):
         """Calls either :func:`forward_train` or :func:`forward_test` depending
         on whether ``return_loss`` is ``True``.
@@ -247,8 +247,9 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss, log_vars=log_vars, num_samples=len(data['img_metas']))
+        outputs = dict(loss=loss,
+                       log_vars=log_vars,
+                       num_samples=len(data['img_metas']))
 
         return outputs
 
@@ -262,8 +263,9 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss, log_vars=log_vars, num_samples=len(data['img_metas']))
+        outputs = dict(loss=loss,
+                       log_vars=log_vars,
+                       num_samples=len(data['img_metas']))
 
         return outputs
 
@@ -334,22 +336,21 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        img = imshow_det_bboxes(
-            img,
-            bboxes,
-            labels,
-            segms,
-            class_names=self.CLASSES,
-            score_thr=score_thr,
-            bbox_color=bbox_color,
-            text_color=text_color,
-            mask_color=mask_color,
-            thickness=thickness,
-            font_size=font_size,
-            win_name=win_name,
-            show=show,
-            wait_time=wait_time,
-            out_file=out_file)
+        img = imshow_det_bboxes(img,
+                                bboxes,
+                                labels,
+                                segms,
+                                class_names=self.CLASSES,
+                                score_thr=score_thr,
+                                bbox_color=bbox_color,
+                                text_color=text_color,
+                                mask_color=mask_color,
+                                thickness=thickness,
+                                font_size=font_size,
+                                win_name=win_name,
+                                show=show,
+                                wait_time=wait_time,
+                                out_file=out_file)
 
         if not (show or out_file):
             return img

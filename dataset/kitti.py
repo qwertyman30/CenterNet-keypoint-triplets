@@ -14,9 +14,7 @@ from collections import OrderedDict
 class KITTI(Dataset):
     CLASSES = ['Pedestrian', 'Car', 'Cyclist']
 
-    def __init__(self, opts,
-                 train=True,
-                 test_mode=False):
+    def __init__(self, opts, train=True, test_mode=False):
         if train:
             self.ann_file = opts["ann_file_train"]
         else:
@@ -43,7 +41,10 @@ class KITTI(Dataset):
         back = "resnet50"
         if "dla" in opts["backbone"]:
             back = "dla"
-        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False, backbone=back)
+        self.Resize_train = Resize(img_scale=opts["img_scale"],
+                                   multiscale_mode='range',
+                                   keep_ratio=False,
+                                   backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
@@ -51,7 +52,9 @@ class KITTI(Dataset):
         # formatting pipeline
         self.LoadRPDV2Annotations = LoadRPDV2Annotations(num_classes=3)
         self.RPDV2FormatBundle = RPDV2FormatBundle()
-        self.Collect_train = Collect(keys=['img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'])
+        self.Collect_train = Collect(keys=[
+            'img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'
+        ])
 
         # test transforms and pipeline
         self.ImageToTensor = ImageToTensor(keys=['img'])
@@ -69,7 +72,8 @@ class KITTI(Dataset):
         data_infos = []
         for i in self.img_ids:
             info = self.coco.loadImgs([i])[0]
-            info["annos"] = self.coco.loadAnns(self.coco.getAnnIds(imgIds=[i], catIds=self.cat_ids))
+            info["annos"] = self.coco.loadAnns(
+                self.coco.getAnnIds(imgIds=[i], catIds=self.cat_ids))
             info['filename'] = info['file_name']
             data_infos.append(info)
         return data_infos
@@ -145,11 +149,10 @@ class KITTI(Dataset):
 
         seg_map = img_info['filename'].replace('jpg', 'png')
 
-        ann = dict(
-            bboxes=gt_bboxes,
-            labels=gt_labels,
-            bboxes_ignore=gt_bboxes_ignore,
-            seg_map=seg_map)
+        ann = dict(bboxes=gt_bboxes,
+                   labels=gt_labels,
+                   bboxes_ignore=gt_bboxes_ignore,
+                   seg_map=seg_map)
 
         return ann
 
@@ -218,7 +221,11 @@ class KITTI(Dataset):
                 continue
             return data
 
-    def format_results(self, results, save_dir=None, save_debug_dir=None, **kwargs):
+    def format_results(self,
+                       results,
+                       save_dir=None,
+                       save_debug_dir=None,
+                       **kwargs):
         """Format the results to txt (standard format for Kitti evaluation).
         Args:
             results (list): Testing results of the dataset.
@@ -240,8 +247,17 @@ class KITTI(Dataset):
             sample_idx = self.data_infos[idx]['image_idx']
             num_example = 0
 
-            anno = {'name': [], 'truncated': [], 'occluded': [], 'alpha': [], 'bbox': [], 'dimensions': [],
-                    'location': [], 'rotation_y': [], 'score': []}
+            anno = {
+                'name': [],
+                'truncated': [],
+                'occluded': [],
+                'alpha': [],
+                'bbox': [],
+                'dimensions': [],
+                'location': [],
+                'rotation_y': [],
+                'score': []
+            }
             for cls_idx, cls_bbox in enumerate(bbox_list):
                 cls_name = self.cat_ids[cls_idx]
                 bbox_2d_preds = cls_bbox[:, :4]
@@ -266,17 +282,24 @@ class KITTI(Dataset):
                 anno = {k: np.stack(v) for k, v in anno.items()}
             else:
                 anno = {
-                    'name': np.array([]), 'truncated': np.array([]), 'occluded': np.array([]),
-                    'alpha': np.array([]), 'bbox': np.zeros([0, 4]), 'dimensions': np.zeros([0, 3]),
-                    'location': np.zeros([0, 3]), 'rotation_y': np.array([]), 'score': np.array([])}
+                    'name': np.array([]),
+                    'truncated': np.array([]),
+                    'occluded': np.array([]),
+                    'alpha': np.array([]),
+                    'bbox': np.zeros([0, 4]),
+                    'dimensions': np.zeros([0, 3]),
+                    'location': np.zeros([0, 3]),
+                    'rotation_y': np.array([]),
+                    'score': np.array([])
+                }
 
-            anno["sample_idx"] = np.array(
-                [sample_idx] * num_example, dtype=np.int64)
+            anno["sample_idx"] = np.array([sample_idx] * num_example,
+                                          dtype=np.int64)
             det_annos.append(anno)
 
             if save_dir is not None:
-                cur_det_file = osp.join(
-                    save_dir, 'results', '%06d.txt' % sample_idx)
+                cur_det_file = osp.join(save_dir, 'results',
+                                        '%06d.txt' % sample_idx)
                 print("saving results to", cur_det_file)
 
                 # dump detection results into txt files
@@ -286,16 +309,20 @@ class KITTI(Dataset):
                     dims = anno['dimensions']  # lhw -> hwl
 
                     for idx in range(len(bbox)):
-                        print('%s -1 -1 %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f'
-                              % (anno['name'][idx], anno['alpha'][idx], bbox[idx][0], bbox[idx][1], bbox[idx][2],
-                                 bbox[idx][3],
-                                 dims[idx][1], dims[idx][2], dims[idx][0], loc[idx][0], loc[idx][1], loc[idx][2],
-                                 anno['rotation_y'][idx], anno['score'][idx]), file=f)
+                        print(
+                            '%s -1 -1 %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f'
+                            % (anno['name'][idx], anno['alpha'][idx],
+                               bbox[idx][0], bbox[idx][1], bbox[idx][2],
+                               bbox[idx][3], dims[idx][1], dims[idx][2],
+                               dims[idx][0], loc[idx][0], loc[idx][1],
+                               loc[idx][2], anno['rotation_y'][idx],
+                               anno['score'][idx]),
+                            file=f)
 
             if save_debug_dir is not None:
                 # dump debug infos into pkl files
-                cur_debug_file = osp.join(
-                    save_debug_dir, 'det_info_%06d.pkl' % sample_idx)
+                cur_debug_file = osp.join(save_debug_dir,
+                                          'det_info_%06d.pkl' % sample_idx)
                 debug_infos = {
                     'anno': anno,
                     'gt_anno': self.data_infos[idx]["annos"],
@@ -305,9 +332,7 @@ class KITTI(Dataset):
 
         return det_annos
 
-    def evaluate(self,
-                 results,
-                 txtfile_prefix=None):
+    def evaluate(self, results, txtfile_prefix=None):
         if 'annos' not in self.data_infos[0]:
             print('The testing results of the whole dataset is empty.')
             raise ValueError(
@@ -318,8 +343,8 @@ class KITTI(Dataset):
         gt_annos = [x['annos'] for x in self.data_infos]
 
         from kitti_object_eval_python.eval import get_official_eval_result
-        eval_results = get_official_eval_result(
-            gt_annos, det_annos, self.CLASSES)
+        eval_results = get_official_eval_result(gt_annos, det_annos,
+                                                self.CLASSES)
 
         return_results = OrderedDict()
         for cls_name, ret in eval_results.items():

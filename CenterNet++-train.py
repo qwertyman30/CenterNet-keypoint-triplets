@@ -19,8 +19,8 @@ from model.dense_heads.pycenternet_head import PyCenterNetHead
 from model.neck.fpn import FPN
 from model.detectors.pycenternet_detector import PyCenterNetDetector
 from model.utils.utils import save_model, update_lr
-from config import *
 from utils import step, plot
+from config import *
 
 print(torch.cuda.is_available())
 print(torch.version.cuda)
@@ -95,7 +95,8 @@ for epoch in progress:
     if epoch in opts["lr_step"]:
         lr = opts["lr"] * (0.1**(opts["lr_step"].index(epoch) + 1))
         update_lr(optimizer, lr)
-
+    
+    # Validation
     if epoch % opts["save_interval"] == 0 or epoch == opts["num_epochs"]:
         with torch.no_grad():
             print(f"VAL STEP {epoch}")

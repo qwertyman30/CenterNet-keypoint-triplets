@@ -15,21 +15,23 @@ from .utils.test_augs import MultiScaleFlipAug
 
 class COCO(Dataset):
     CLASSES = [
-        'person', 'bicycle', 'car', 'motorcycle', 'airplane',
-        'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
-        'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-        'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack',
-        'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis',
-        'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-        'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass',
-        'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-        'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-        'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv',
+        'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
+        'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign',
+        'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep',
+        'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
+        'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard',
+        'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard',
+        'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork',
+        'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
+        'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair',
+        'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv',
         'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
         'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
-        'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+        'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+    ]
 
-    def __init__(self, opts,
+    def __init__(self,
+                 opts,
                  train=True,
                  test_mode=False,
                  filter_empty_gt=True):
@@ -61,18 +63,26 @@ class COCO(Dataset):
         back = "resnet50"
         if "dla" in opts["backbone"]:
             back = "dla"
-        self.Resize_train = Resize(img_scale=opts["img_scale"], multiscale_mode='range', keep_ratio=False, backbone=back)
+        self.Resize_train = Resize(img_scale=opts["img_scale"],
+                                   multiscale_mode='range',
+                                   keep_ratio=False,
+                                   backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
-        self.Normalize = Normalize(mean=opts["mean"], std=opts["std"], to_rgb=True)
+        self.Normalize = Normalize(mean=opts["mean"],
+                                   std=opts["std"],
+                                   to_rgb=True)
         self.Pad = Pad(size_divisor=opts["size_divisor"])
 
         # formatting pipeline
         self.LoadRPDV2Annotations = LoadRPDV2Annotations()
         self.RPDV2FormatBundle = RPDV2FormatBundle()
-        self.Collect_train = Collect(keys=['img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'])
+        self.Collect_train = Collect(keys=[
+            'img', 'gt_bboxes', 'gt_labels', 'gt_sem_map', 'gt_sem_weights'
+        ])
 
         # test transforms
-        self.MultiScaleFlipAug = MultiScaleFlipAug(img_scale=(736, 512), flip=False)
+        self.MultiScaleFlipAug = MultiScaleFlipAug(img_scale=(736, 512),
+                                                   flip=False)
 
     def _set_group_flag(self):
         """Set flag according to image aspect ratio.
@@ -218,12 +228,11 @@ class COCO(Dataset):
 
         seg_map = img_info['filename'].replace('jpg', 'png')
 
-        ann = dict(
-            bboxes=gt_bboxes,
-            labels=gt_labels,
-            bboxes_ignore=gt_bboxes_ignore,
-            masks=gt_masks_ann,
-            seg_map=seg_map)
+        ann = dict(bboxes=gt_bboxes,
+                   labels=gt_labels,
+                   bboxes_ignore=gt_bboxes_ignore,
+                   masks=gt_masks_ann,
+                   seg_map=seg_map)
 
         return ann
 

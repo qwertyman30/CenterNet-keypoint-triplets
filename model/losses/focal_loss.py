@@ -35,8 +35,8 @@ def py_sigmoid_focal_loss(pred,
     pt = (1 - pred_sigmoid) * target + pred_sigmoid * (1 - target)
     focal_weight = (alpha * target + (1 - alpha) *
                     (1 - target)) * pt.pow(gamma)
-    loss = F.binary_cross_entropy_with_logits(
-        pred, target, reduction='none') * focal_weight
+    loss = F.binary_cross_entropy_with_logits(pred, target,
+                                              reduction='none') * focal_weight
     if weight is not None:
         if weight.shape != loss.shape:
             if weight.size(0) == loss.size(0):
@@ -73,8 +73,10 @@ def separate_sigmoid_focal_loss(pred,
     pos_pred = pred_sigmoid[pos_inds]
     neg_pred = pred_sigmoid[neg_inds]
 
-    pos_loss = -torch.log(pos_pred) * torch.pow(1 - pos_pred, gamma) * pos_weights * alpha
-    neg_loss = -torch.log(1 - neg_pred) * torch.pow(neg_pred, gamma) * (1 - alpha)
+    pos_loss = -torch.log(pos_pred) * torch.pow(1 - pos_pred,
+                                                gamma) * pos_weights * alpha
+    neg_loss = -torch.log(1 - neg_pred) * torch.pow(neg_pred,
+                                                    gamma) * (1 - alpha)
 
     if pos_pred.nelement() == 0:
         loss = neg_loss.sum() / avg_factor
@@ -183,8 +185,8 @@ class FocalLoss(nn.Module):
             torch.Tensor: The calculated loss
         """
         assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = (reduction_override
+                     if reduction_override else self.reduction)
         if self.use_sigmoid:
             if torch.cuda.is_available() and pred.is_cuda:
                 calculate_loss_func = sigmoid_focal_loss
@@ -228,8 +230,8 @@ class SEPFocalLoss(nn.Module):
                 avg_factor=None,
                 reduction_override=None):
         assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+        reduction = (reduction_override
+                     if reduction_override else self.reduction)
         loss_cls = self.loss_weight * separate_sigmoid_focal_loss(
             pred,
             target,

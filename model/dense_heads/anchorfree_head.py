@@ -44,11 +44,10 @@ class AnchorFreeHead(BaseDenseHead, BBoxTestMixin):
                  strides=(4, 8, 16, 32, 64),
                  dcn_on_last_conv=False,
                  conv_bias='auto',
-                 loss_cls=dict(
-                     use_sigmoid=True,
-                     gamma=2.0,
-                     alpha=0.25,
-                     loss_weight=1.0),
+                 loss_cls=dict(use_sigmoid=True,
+                               gamma=2.0,
+                               alpha=0.25,
+                               loss_weight=1.0),
                  loss_bbox=dict(loss_weight=1.0),
                  conv_cfg=None,
                  norm_cfg=None,
@@ -90,15 +89,14 @@ class AnchorFreeHead(BaseDenseHead, BBoxTestMixin):
             else:
                 conv_cfg = self.conv_cfg
             self.cls_convs.append(
-                ConvModule(
-                    chn,
-                    self.feat_channels,
-                    3,
-                    stride=1,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    bias=self.conv_bias))
+                ConvModule(chn,
+                           self.feat_channels,
+                           3,
+                           stride=1,
+                           padding=1,
+                           conv_cfg=conv_cfg,
+                           norm_cfg=self.norm_cfg,
+                           bias=self.conv_bias))
 
     def _init_reg_convs(self):
         """Initialize bbox regression conv layers of the head."""
@@ -110,20 +108,21 @@ class AnchorFreeHead(BaseDenseHead, BBoxTestMixin):
             else:
                 conv_cfg = self.conv_cfg
             self.reg_convs.append(
-                ConvModule(
-                    chn,
-                    self.feat_channels,
-                    3,
-                    stride=1,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    bias=self.conv_bias))
+                ConvModule(chn,
+                           self.feat_channels,
+                           3,
+                           stride=1,
+                           padding=1,
+                           conv_cfg=conv_cfg,
+                           norm_cfg=self.norm_cfg,
+                           bias=self.conv_bias))
 
     def _init_predictor(self):
         """Initialize predictor layers of the head."""
-        self.conv_cls = nn.Conv2d(
-            self.feat_channels, self.cls_out_channels, 3, padding=1)
+        self.conv_cls = nn.Conv2d(self.feat_channels,
+                                  self.cls_out_channels,
+                                  3,
+                                  padding=1)
         self.conv_reg = nn.Conv2d(self.feat_channels, 4, 3, padding=1)
 
     def init_weights(self):

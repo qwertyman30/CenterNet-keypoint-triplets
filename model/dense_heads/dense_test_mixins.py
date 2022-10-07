@@ -80,13 +80,12 @@ class BBoxTestMixin(object):
         merged_bboxes, merged_scores = self.merge_aug_bboxes(
             aug_bboxes, aug_scores, img_metas)
         merged_factors = torch.cat(aug_factors, dim=0) if aug_factors else None
-        det_bboxes, det_labels = multiclass_nms(
-            merged_bboxes,
-            merged_scores,
-            self.test_cfg["score_thr"],
-            self.test_cfg["nms"],
-            self.test_cfg["max_per_img"],
-            score_factors=merged_factors)
+        det_bboxes, det_labels = multiclass_nms(merged_bboxes,
+                                                merged_scores,
+                                                self.test_cfg["score_thr"],
+                                                self.test_cfg["nms"],
+                                                self.test_cfg["max_per_img"],
+                                                score_factors=merged_factors)
 
         if rescale:
             _det_bboxes = det_bboxes
