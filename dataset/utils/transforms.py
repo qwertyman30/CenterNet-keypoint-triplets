@@ -80,8 +80,7 @@ class Resize(object):
         # TODO: refactor the override option in Resize
         self.override = override
         self.bbox_clip_border = bbox_clip_border
-        if backbone == "dla":
-            self.correction = True
+        self.correction = True if backbone == "dla" else False
 
     @staticmethod
     def random_select(img_scales):

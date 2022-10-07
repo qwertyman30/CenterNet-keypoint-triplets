@@ -9,4 +9,4 @@ mmdet.egg-info
 *.ipynb
 results
 .vscode
-**/*.so/
+**/*.so
