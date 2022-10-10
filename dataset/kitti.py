@@ -8,7 +8,7 @@ import os.path as osp
 from .utils.loaders import LoadAnnotations, LoadImageFromFile
 from .utils.transforms import Resize, RandomFlip, Normalize, ColorTransform, Pad
 from .utils.test_augs import MultiScaleFlipAug
-from .utils.formatting import Collect, ImageToTensor, RPDV2FormatBundle, LoadRPDV2Annotations
+from .utils.formatting import Collect, RPDV2FormatBundle, LoadRPDV2Annotations
 from collections import OrderedDict
 
 
@@ -23,11 +23,7 @@ class KITTI(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
-        self.split = opts["split"]
         self.test_mode = not train
-
-        self.mean = opts["mean"]
-        self.std = opts["std"]
 
         self.alpha_in_degree = False
 
@@ -44,11 +40,13 @@ class KITTI(Dataset):
             back = "dla"
         self.Resize_train = Resize(img_scale=opts["img_scale"],
                                    multiscale_mode='range',
-                                   keep_ratio=True,
+                                   keep_ratio=opts["keep_ratio"],
                                    backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         # self.ColorTransform = ColorTransform(level=5.)
-        self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
+        self.Normalize = Normalize(mean=opts["mean"],
+                                   std=opts["std"],
+                                   to_rgb=opts["to_rgb"])
         self.Pad = Pad(size_divisor=opts["size_divisor"])
         # formatting pipeline
         self.LoadRPDV2Annotations = LoadRPDV2Annotations(num_classes=3)
@@ -58,7 +56,8 @@ class KITTI(Dataset):
         ])
 
         # test transforms and pipeline
-        self.MultiScaleFlipAug = MultiScaleFlipAug(opts, img_scale=opts["img_scale_test"])
+        self.MultiScaleFlipAug = MultiScaleFlipAug(
+            opts, img_scale=opts["img_scale_test"])
 
     def load_annotations(self, ann_file):
         self.annot_path = osp.join(ann_file)
@@ -214,11 +213,7 @@ class KITTI(Dataset):
         if self.test_mode:
             return self.prepare_test_img(idx)
         while True:
-            data = self.prepare_train_img(idx)
-            if data is None:
-                idx = self._rand_another(idx)
-                continue
-            return data
+            return self.prepare_train_img(idx)
 
     def format_results(self,
                        results,

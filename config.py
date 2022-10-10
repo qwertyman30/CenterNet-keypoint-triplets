@@ -17,11 +17,12 @@ opts["to_float"] = False
 opts["split"] = "train"
 # learning hyperparams
 opts["batch_size"] = 16
-opts["num_workers"] = 2
-opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1200
+opts["num_workers"] = 4
+opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1500
 opts["lr"] = 1e-4
-opts["lr_step"] = [63, 69
-                   ] if opts["dataset"] == "coco" else [400, 600, 800, 1000]
+opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [
+    625, 1200
+]
 opts["save_interval"] = 10 if opts["dataset"] == "coco" else 150
 # dataset config
 opts["data_root"] = "data/"
@@ -32,7 +33,8 @@ if opts["to_float"]:
 else:
     opts["mean"] = [123.675, 116.28, 103.53]
     opts["std"] = [58.395, 57.12, 57.375]
-# opts["img_scale"] = [(1280, 384)]
+opts["img_scale"] = [(900, 256), (900, 608)]
+opts["img_scale_test"] = (736, 512)
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
     if opts["split"] == "train":
@@ -41,15 +43,11 @@ if opts["dataset"] == "kitti":
     elif opts["split"] == "val":
         opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
-    opts["img_scale"] = [(1600, 256), (1600, 384)]
-    opts["img_scale_test"] = (1280, 384)
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
     opts["ann_file_train"] = "data/coco/annotations/instances_train2017.json"
     opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
-    opts["img_scale"] = [(900, 256), (900, 608)]
-    opts["img_scale_test"] = (736, 512)
 opts["backbone"] = "resnet50"
 assert opts["backbone"] in [
     "resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c",
@@ -143,7 +141,7 @@ norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 neck_cfg = dict(in_channels=backbone_cfg[opts["backbone"]]["channels"]
                 if "dla" in opts["backbone"] else [256, 512, 1024, 2048],
                 out_channels=256,
-                start_level=2 if "dla" in opts["backbone"] else 1,
+                start_level=3 if "dla" in opts["backbone"] else 1,
                 add_extra_convs='on_input',
                 num_outs=5,
                 norm_cfg=norm_cfg)

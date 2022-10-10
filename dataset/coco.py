@@ -33,7 +33,6 @@ class COCO(Dataset):
     def __init__(self,
                  opts,
                  train=True,
-                 test_mode=False,
                  filter_empty_gt=True):
         if train:
             self.ann_file = opts["ann_file_train"]
@@ -42,14 +41,14 @@ class COCO(Dataset):
         self.data_root = opts["data_root"]
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
-        self.test_mode = test_mode
+        self.test_mode = not train
         self.filter_empty_gt = filter_empty_gt
 
         # load annotations
         self.data_infos = self.load_annotations(self.ann_file)
 
         # filter images too small and containing no annotations
-        if not test_mode:
+        if not self.test_mode:
             valid_inds = self._filter_imgs()
             self.data_infos = [self.data_infos[i] for i in valid_inds]
             # set group flag for the sampler
@@ -65,12 +64,12 @@ class COCO(Dataset):
             back = "dla"
         self.Resize_train = Resize(img_scale=opts["img_scale"],
                                    multiscale_mode='range',
-                                   keep_ratio=False,
+                                   keep_ratio=opts["keep_ratio"],
                                    backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         self.Normalize = Normalize(mean=opts["mean"],
                                    std=opts["std"],
-                                   to_rgb=True)
+                                   to_rgb=opts["to_rgb"])
         self.Pad = Pad(size_divisor=opts["size_divisor"])
 
         # formatting pipeline
