@@ -17,9 +17,11 @@ opts["to_float"] = False
 opts["split"] = "train"
 # learning hyperparams
 opts["batch_size"] = 16
+opts["num_workers"] = 2
 opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1200
 opts["lr"] = 1e-4
-opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 800, 1100]
+opts["lr_step"] = [63, 69
+                   ] if opts["dataset"] == "coco" else [400, 600, 800, 1000]
 opts["save_interval"] = 10 if opts["dataset"] == "coco" else 150
 # dataset config
 opts["data_root"] = "data/"
@@ -30,8 +32,6 @@ if opts["to_float"]:
 else:
     opts["mean"] = [123.675, 116.28, 103.53]
     opts["std"] = [58.395, 57.12, 57.375]
-opts["img_scale"] = [(900, 256), (900, 608)]
-opts["img_scale_test"] = (736, 512)
 # opts["img_scale"] = [(1280, 384)]
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
@@ -41,11 +41,15 @@ if opts["dataset"] == "kitti":
     elif opts["split"] == "val":
         opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
+    opts["img_scale"] = [(1600, 256), (1600, 384)]
+    opts["img_scale_test"] = (1280, 384)
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
     opts["ann_file_train"] = "data/coco/annotations/instances_train2017.json"
     opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
+    opts["img_scale"] = [(900, 256), (900, 608)]
+    opts["img_scale_test"] = (736, 512)
 opts["backbone"] = "resnet50"
 assert opts["backbone"] in [
     "resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c",

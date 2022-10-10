@@ -37,14 +37,14 @@ dataset_val = DatasetFactory(opts, train=False)
 train_loader = DataLoader(dataset_train,
                           batch_size=opts["batch_size"],
                           shuffle=True,
-                          num_workers=0,
+                          num_workers=opts["num_workers"],
                           collate_fn=collate,
                           pin_memory=True)
 
-val_loader = DataLoader(dataset_train,
+val_loader = DataLoader(dataset_val,
                         batch_size=opts["batch_size"],
                         shuffle=True,
-                        num_workers=0,
+                        num_workers=opts["num_workers"],
                         collate_fn=collate,
                         pin_memory=True)
 

@@ -44,7 +44,7 @@ class KITTI(Dataset):
             back = "dla"
         self.Resize_train = Resize(img_scale=opts["img_scale"],
                                    multiscale_mode='range',
-                                   keep_ratio=False,
+                                   keep_ratio=True,
                                    backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
         # self.ColorTransform = ColorTransform(level=5.)
