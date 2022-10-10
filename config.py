@@ -14,15 +14,12 @@ opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
 opts["size_divisor"] = 32
 opts["to_float"] = False
-opts["split"] = "train"
 # learning hyperparams
 opts["batch_size"] = 16
 opts["num_workers"] = 4
 opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1500
 opts["lr"] = 1e-4
-opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [
-    625, 1200
-]
+opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [625, 1200]
 opts["save_interval"] = 10 if opts["dataset"] == "coco" else 150
 # dataset config
 opts["data_root"] = "data/"
@@ -37,11 +34,8 @@ opts["img_scale"] = [(900, 256), (900, 608)]
 opts["img_scale_test"] = (736, 512)
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3
-    if opts["split"] == "train":
-        opts["ann_file_train"] = "data/kitti/annotations/kitti_3dop_train.json"
-        opts["ann_file_val"] = "data/kitti/annotations/kitti_3dop_val.json"
-    elif opts["split"] == "val":
-        opts["ann_file"] = "data/kitti/annotations/kitti_3dop_val.json"
+    opts["ann_file_train"] = "data/kitti/annotations/kitti_3dop_train.json"
+    opts["ann_file_val"] = "data/kitti/annotations/kitti_3dop_val.json"
     opts["img_prefix"] = "data/kitti/images/training/image_2"
 elif opts["dataset"] == "coco":
     opts["num_classes"] = 80
@@ -54,6 +48,11 @@ assert opts["backbone"] in [
     "dla102", "dla102x", "dla102x2", "dla169"
 ], "backbone not supported"
 
+norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+
+grad_clip = {'max_norm': 35, 'norm_type': 2}
+
+# model settings
 backbone_cfg = {
     "resnet50":
     dict(model=ResNet,
@@ -96,7 +95,7 @@ backbone_cfg = {
     "dla60x":
     dict(model=dla60x,
          levels=[1, 1, 1, 2, 2, 1],
-         channels=[16, 32, 64, 64, 128, 256],
+         channels=[16, 32, 128, 256, 512, 1024],
          num_classes=opts["num_classes"],
          pretrained="pretrained/dla60x-d15cacda.pth"
          if opts["train"] else None),
@@ -136,7 +135,6 @@ backbone_cfg = {
         num_classes=opts["num_classes"],
         pretrained="pretrained/dla169-0914e092.pth" if opts["train"] else None)
 }
-norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
 
 neck_cfg = dict(in_channels=backbone_cfg[opts["backbone"]]["channels"]
                 if "dla" in opts["backbone"] else [256, 512, 1024, 2048],
@@ -168,6 +166,7 @@ bbox_head_cfg = dict(
     loss_heatmap=dict(alpha=2.0, gamma=4.0, loss_weight=0.25),
     loss_offset=dict(beta=1.0 / 9.0, loss_weight=1.0),
     loss_sem=dict(gamma=2.0, alpha=0.25, loss_weight=0.1))
+
 # Detector cfg
 train_cfg = dict(init=dict(assigner=dict(type='PointAssignerV2',
                                          scale=4,
@@ -185,6 +184,7 @@ train_cfg = dict(init=dict(assigner=dict(type='PointAssignerV2',
                              allowed_border=-1,
                              pos_weight=-1,
                              debug=False))
+
 test_cfg = dict(distance_threshold=0.5,
                 nms_pre=1000,
                 min_bbox_size=0,
@@ -203,5 +203,3 @@ optimizer_cfg = dict(
             'relative_position_bias_table': dict(decay_mult=0.),
             'norm': dict(decay_mult=0.)
         }))
-
-grad_clip = {'max_norm': 35, 'norm_type': 2}
