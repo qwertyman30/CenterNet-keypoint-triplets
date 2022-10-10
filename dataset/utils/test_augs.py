@@ -38,14 +38,17 @@ class MultiScaleFlipAug(object):
     """
 
     def __init__(self,
+                 opts,
                  img_scale=None,
                  scale_factor=None,
                  flip=False,
                  flip_direction='horizontal'):
         self.Resize = Resize(keep_ratio=True)
         self.RandomFlip = RandomFlip()
-        self.Normalize = Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-        self.Pad = Pad(size_divisor=32)
+        self.Normalize = Normalize(mean=opts["mean"],
+                                   std=opts["std"],
+                                   to_rgb=True)
+        self.Pad = Pad(size_divisor=opts["size_divisor"])
         self.ImageToTensor = ImageToTensor(keys=['img'])
         self.Collect = Collect(keys=['img'])
 
@@ -96,7 +99,7 @@ class MultiScaleFlipAug(object):
                 _results['flip'] = flip
                 _results['flip_direction'] = direction
 
-                data = self.Resize(data)
+                data = self.Resize(_results)
                 data = self.RandomFlip(data)
                 data = self.Normalize(data)
                 data = self.Pad(data)

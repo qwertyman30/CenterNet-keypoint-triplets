@@ -31,6 +31,7 @@ else:
     opts["mean"] = [123.675, 116.28, 103.53]
     opts["std"] = [58.395, 57.12, 57.375]
 opts["img_scale"] = [(900, 256), (900, 608)]
+opts["img_scale_test"] = (736, 512)
 # opts["img_scale"] = [(1280, 384)]
 if opts["dataset"] == "kitti":
     opts["num_classes"] = 3

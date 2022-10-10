@@ -6,7 +6,8 @@ import pycocotools.coco as coco
 import os.path as osp
 # from mmdet.core import eval_map, eval_recalls
 from .utils.loaders import LoadAnnotations, LoadImageFromFile
-from .utils.transforms import Resize, RandomFlip, Normalize, ColorTransform
+from .utils.transforms import Resize, RandomFlip, Normalize, ColorTransform, Pad
+from .utils.test_augs import MultiScaleFlipAug
 from .utils.formatting import Collect, ImageToTensor, RPDV2FormatBundle, LoadRPDV2Annotations
 from collections import OrderedDict
 
@@ -14,7 +15,7 @@ from collections import OrderedDict
 class KITTI(Dataset):
     CLASSES = ['Pedestrian', 'Car', 'Cyclist']
 
-    def __init__(self, opts, train=True, test_mode=False):
+    def __init__(self, opts, train=True):
         if train:
             self.ann_file = opts["ann_file_train"]
         else:
@@ -23,7 +24,7 @@ class KITTI(Dataset):
         self.img_prefix = opts["img_prefix"]
         self.seg_prefix = opts["seg_prefix"]
         self.split = opts["split"]
-        self.test_mode = test_mode
+        self.test_mode = not train
 
         self.mean = opts["mean"]
         self.std = opts["std"]
@@ -46,9 +47,9 @@ class KITTI(Dataset):
                                    keep_ratio=False,
                                    backbone=back)
         self.RandomFlip_train = RandomFlip(flip_ratio=opts["flip_ratio"])
-        self.ColorTransform = ColorTransform(level=5.)
+        # self.ColorTransform = ColorTransform(level=5.)
         self.Normalize = Normalize(mean=self.mean, std=self.std, to_rgb=True)
-
+        self.Pad = Pad(size_divisor=opts["size_divisor"])
         # formatting pipeline
         self.LoadRPDV2Annotations = LoadRPDV2Annotations(num_classes=3)
         self.RPDV2FormatBundle = RPDV2FormatBundle()
@@ -57,8 +58,7 @@ class KITTI(Dataset):
         ])
 
         # test transforms and pipeline
-        self.ImageToTensor = ImageToTensor(keys=['img'])
-        self.Collect_test = Collect(keys=['img'])
+        self.MultiScaleFlipAug = MultiScaleFlipAug(opts, img_scale=opts["img_scale_test"])
 
     def load_annotations(self, ann_file):
         self.annot_path = osp.join(ann_file)
@@ -182,8 +182,9 @@ class KITTI(Dataset):
         results = self.LoadAnnotations(results)
         results = self.Resize_train(results)
         results = self.RandomFlip_train(results)
-        results = self.ColorTransform(results)
+        # results = self.ColorTransform(results)
         results = self.Normalize(results)
+        results = self.Pad(results)
         results = self.LoadRPDV2Annotations(results)
         results = self.RPDV2FormatBundle(results)
         results = self.Collect_train(results)
@@ -205,9 +206,7 @@ class KITTI(Dataset):
         results['bbox_fields'] = []
 
         results = self.LoadImageFromFile(results)
-        results = self.Normalize(results)
-        results = self.ImageToTensor(results)
-        results = self.Collect_test(results)
+        results = self.MultiScaleFlipAug(results)
 
         return results
 
