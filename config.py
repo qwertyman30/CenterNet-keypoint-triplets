@@ -13,14 +13,14 @@ opts["keep_ratio"] = True
 opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
 opts["size_divisor"] = 32
-opts["to_float"] = True
+opts["to_float"] = False
 opts["split"] = "train"
 # learning hyperparams
 opts["batch_size"] = 16
-opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1000
+opts["num_epochs"] = 72 if opts["dataset"] == "coco" else 1200
 opts["lr"] = 1e-4
-opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 700, 900]
-opts["save_interval"] = 10 if opts["dataset"] == "coco" else 125
+opts["lr_step"] = [63, 69] if opts["dataset"] == "coco" else [500, 800, 1100]
+opts["save_interval"] = 10 if opts["dataset"] == "coco" else 150
 # dataset config
 opts["data_root"] = "data/"
 opts["seg_prefix"] = None
