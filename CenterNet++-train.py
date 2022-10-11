@@ -32,7 +32,9 @@ np.random.seed(seed)
 
 # Dataset and loader
 dataset_train = DatasetFactory(opts, train=True)
-dataset_val = DatasetFactory(opts, train=False)
+# train is true here, in order to get the val losses.
+# however, training wont be done on val set
+dataset_val = DatasetFactory(opts, train=True)
 
 train_loader = DataLoader(dataset_train,
                           batch_size=opts["batch_size"],
@@ -79,6 +81,7 @@ LOSS_CLS_VAL, LOSS_PTS_INIT_VAL, LOSS_PTS_REFINE_VAL, LOSS_HEATMAP_VAL = [], [],
 LOSS_OFFSET_VAL, LOSS_SEM_VAL, LOSSES_VAL = [], [], []
 for epoch in progress:
     print(f"TRAIN STEP {epoch}")
+    # Training
     loss_means_train = step(detector,
                             train_loader,
                             progress,
@@ -92,6 +95,7 @@ for epoch in progress:
     LOSS_OFFSET_TRAIN.append(loss_means_train["loss_offset"])
     LOSS_SEM_TRAIN.append(loss_means_train["loss_sem"])
 
+    # lr scheduler
     if epoch in opts["lr_step"]:
         lr = opts["lr"] * (0.1**(opts["lr_step"].index(epoch) + 1))
         update_lr(optimizer, lr)
@@ -117,7 +121,7 @@ for epoch in progress:
                        LOSS_PTS_REFINE_TRAIN, LOSS_HEATMAP_TRAIN,
                        LOSS_OFFSET_TRAIN, LOSS_SEM_TRAIN, LOSSES_VAL,
                        LOSS_CLS_VAL, LOSS_PTS_INIT_VAL, LOSS_PTS_REFINE_VAL,
-                       LOSS_HEATMAP_VAL, LOSS_OFFSET_VAL, LOSS_SEM_VAL)
+                       LOSS_HEATMAP_VAL, LOSS_OFFSET_VAL, LOSS_SEM_VAL, opts)
 
 # Plotting losses
 plot(LOSSES_TRAIN, "LOSSES_TRAIN")

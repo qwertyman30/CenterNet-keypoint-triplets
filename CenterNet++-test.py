@@ -9,6 +9,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 import torch
+from torch.utils.data import DataLoader
 from mmcv.parallel.data_parallel import scatter_kwargs
 
 from dataset import DatasetFactory
@@ -29,12 +30,12 @@ np.random.seed(seed)
 
 # Dataset and loader
 dataset = DatasetFactory(opts, train=True)
-val_loader = torch.utils.data.DataLoader(dataset,
-                                         batch_size=1,
-                                         shuffle=True,
-                                         num_workers=2,
-                                         collate_fn=collate,
-                                         pin_memory=True)
+val_loader = DataLoader(dataset,
+                        batch_size=1,
+                        shuffle=True,
+                        num_workers=2,
+                        collate_fn=collate,
+                        pin_memory=True)
 
 b_name = opts["backbone"]
 if "dla" in b_name:
@@ -54,7 +55,8 @@ detector = PyCenterNetDetector(backbone,
                                test_cfg=test_cfg,
                                pretrained=pretrained).cuda()
 
-checkpoint = torch.load("saved_models/KITTI_train_resnet50/CenterNet_pp_1000.pth")
+checkpoint = torch.load(
+    "saved_models/KITTI_train_resnet50/CenterNet_pp_1000.pth")
 state_dict = checkpoint["model_state_dict"]
 detector.load_state_dict(state_dict)
 

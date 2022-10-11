@@ -35,9 +35,9 @@ def step(detector, data_loader, progress, optimizer=None, train=True):
             optimizer.step()
 
         progress.set_description(
-            "LOSS: {}, LOSS_CLS: {} LOSS_PTS_INIT: {} LOSS_PTS_REFINE: {} LOSS_HEATMAP: {} LOSS_OFFSET: {} LOSS_SEM: {}"
-            .format(log_vars['loss'], loss_cls, loss_pts_init, loss_pts_refine,
-                    loss_heatmap, loss_offset, loss_sem, loss))
+            'LOSS: %.4f, CLS: %.4f PTS_INIT: %.4f PTS_REFINE: %.4f HEATMAP: %.4f OFFSET: %.4f SEM: %.4f'
+            % (loss, loss_cls, loss_pts_init, loss_pts_refine, loss_heatmap,
+               loss_offset, loss_sem))
 
         loss_cls_.append(loss_cls)
         loss_pts_init_.append(loss_pts_init)
