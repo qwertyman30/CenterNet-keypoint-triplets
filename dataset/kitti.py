@@ -15,8 +15,8 @@ from collections import OrderedDict
 class KITTI(Dataset):
     CLASSES = ['Pedestrian', 'Car', 'Cyclist']
 
-    def __init__(self, opts, train=True):
-        if train:
+    def __init__(self, opts, split="train", train=True):
+        if split == "train":
             self.ann_file = opts["ann_file_train"]
         else:
             self.ann_file = opts["ann_file_val"]

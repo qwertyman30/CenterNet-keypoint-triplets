@@ -2,11 +2,11 @@ from .coco import COCO
 from .kitti import KITTI
 
 
-def DatasetFactory(opts, train=True):
+def DatasetFactory(opts, split="train", train=True):
     if opts["dataset"] == "coco":
-        dataset = COCO(opts, train)
+        dataset = COCO(opts, split, train)
     elif opts["dataset"] == "kitti":
-        dataset = KITTI(opts, train)
+        dataset = KITTI(opts, split, train)
     return dataset
 
 

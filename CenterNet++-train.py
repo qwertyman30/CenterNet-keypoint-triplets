@@ -31,10 +31,8 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 # Dataset and loader
-dataset_train = DatasetFactory(opts, train=True)
-# train is true here, in order to get the val losses.
-# however, training wont be done on val set
-dataset_val = DatasetFactory(opts, train=True)
+dataset_train = DatasetFactory(opts, split="train")
+dataset_val = DatasetFactory(opts, split="val")
 
 train_loader = DataLoader(dataset_train,
                           batch_size=opts["batch_size"],

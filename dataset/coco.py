@@ -30,11 +30,8 @@ class COCO(Dataset):
         'scissors', 'teddy bear', 'hair drier', 'toothbrush'
     ]
 
-    def __init__(self,
-                 opts,
-                 train=True,
-                 filter_empty_gt=True):
-        if train:
+    def __init__(self, opts, split="train", train=True, filter_empty_gt=True):
+        if split == "train":
             self.ann_file = opts["ann_file_train"]
         else:
             self.ann_file = opts["ann_file_val"]
@@ -80,7 +77,8 @@ class COCO(Dataset):
         ])
 
         # test transforms
-        self.MultiScaleFlipAug = MultiScaleFlipAug(img_scale=(736, 512),
+        self.MultiScaleFlipAug = MultiScaleFlipAug(opts,
+                                                   img_scale=(736, 512),
                                                    flip=False)
 
     def _set_group_flag(self):

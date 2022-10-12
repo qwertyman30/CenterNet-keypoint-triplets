@@ -8,7 +8,7 @@ opts = dict()
 opts["nohup"] = False
 opts["train"] = True
 # transforms
-opts["dataset"] = "kitti"
+opts["dataset"] = "coco"
 opts["keep_ratio"] = True
 opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
