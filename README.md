@@ -32,7 +32,7 @@ Extend CenterNet++ to work with KITTI dataset
 
 ```wget https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_image_2.zip https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_calib.zip https://s3.eu-central-1.amazonaws.com/avg-kitti/data_object_label_2.zip```
 
-```unzip data_object_image_2 && unzip data_object_label_2 && unzip data_object_calib```
+```unzip data_object_image_2.zip && unzip data_object_label_2.zip && unzip data_object_calib.zip```
 
 The dataset directory should be like this:
 
