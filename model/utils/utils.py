@@ -20,7 +20,7 @@ def save_model(model, optimizer, epochs, loss_train, loss_cls_train,
                loss_offset_train, loss_sem_train, loss_val, loss_cls_val,
                loss_pts_init_val, loss_pts_refine_val, loss_heatmap_val,
                loss_offset_val, loss_sem_val, opts):
-    model_name = "CenterNet_pp_{}_{}_{}.pth".format(opts["backbone"], opts["img_scale"], epochs)
+    model_name = "CenterNet_pp_{}_{}.pth".format(opts["backbone"], epochs)
     torch.save(
         {
             'epoch': epochs,

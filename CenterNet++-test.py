@@ -29,7 +29,7 @@ torch.manual_seed(seed)
 np.random.seed(seed)
 
 # Dataset and loader
-dataset = DatasetFactory(opts, train=True)
+dataset = DatasetFactory(opts, split="val")
 val_loader = DataLoader(dataset,
                         batch_size=1,
                         shuffle=True,
@@ -56,7 +56,7 @@ detector = PyCenterNetDetector(backbone,
                                pretrained=pretrained).cuda()
 
 checkpoint = torch.load(
-    "saved_models/KITTI_train_resnet50/CenterNet_pp_1000.pth")
+    "saved_models/kitti_resnet50/CenterNet_pp_resnet50_1500.pth")
 state_dict = checkpoint["model_state_dict"]
 detector.load_state_dict(state_dict)
 
@@ -98,7 +98,7 @@ for batch in tqdm(val_loader):
         cls = CLASSES[bbox[5].item()]
         rem = ["0.00"] * 7
         rem = " ".join(rem)
-        f_str = f"{cls}" + " 0.00 0 0.00 " + f"{left} {top} {right} {bottom} {rem} {conf}"
+        f_str = f"{cls}" + " 0.0 0 0.00 " + f"{left} {top} {right} {bottom} {rem} {conf}"
         results.append(f_str)
     file = open(res_path, "w")
     for result in results:
