@@ -8,7 +8,7 @@ opts = dict()
 opts["nohup"] = False
 opts["train"] = True
 # transforms
-opts["dataset"] = "coco"
+opts["dataset"] = "kitti"
 opts["keep_ratio"] = True
 opts["flip_ratio"] = 0.5
 opts["to_rgb"] = True
@@ -42,6 +42,7 @@ elif opts["dataset"] == "coco":
     opts["ann_file_train"] = "data/coco/annotations/instances_train2017.json"
     opts["ann_file_val"] = "data/coco/annotations/instances_val2017.json"
     opts["img_prefix"] = "data/coco/images/train2017"
+    opts["img_prefix_val"] = "data/coco/images/val2017"
 opts["backbone"] = "resnet50"
 assert opts["backbone"] in [
     "resnet50", "dla34", "dla46_c", "dla46x_c", "dla60", "dla60x", "dla60x_c",

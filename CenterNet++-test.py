@@ -56,7 +56,7 @@ detector = PyCenterNetDetector(backbone,
                                pretrained=pretrained).cuda()
 
 checkpoint = torch.load(
-    "saved_models/kitti_resnet50/CenterNet_pp_resnet50_1500.pth")
+    "saved_models/kitti_resnet50/CenterNet_pp_resnet50_150.pth")
 state_dict = checkpoint["model_state_dict"]
 detector.load_state_dict(state_dict)
 

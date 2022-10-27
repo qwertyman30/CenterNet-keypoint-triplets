@@ -36,7 +36,7 @@ class COCO(Dataset):
         else:
             self.ann_file = opts["ann_file_val"]
         self.data_root = opts["data_root"]
-        self.img_prefix = opts["img_prefix"]
+        self.img_prefix = opts["img_prefix"] if split=="train" else opts["img_prefix_val"]
         self.seg_prefix = opts["seg_prefix"]
         self.test_mode = not train
         self.filter_empty_gt = filter_empty_gt
